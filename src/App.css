@@ -1,0 +1,5 @@
+.section{
+    display: block;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #ffffff, #fcf4ee);
+}
