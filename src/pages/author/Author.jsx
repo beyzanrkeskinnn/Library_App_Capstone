@@ -22,9 +22,9 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { getAuthors, createAuthor } from "../../APIs/Author";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -47,31 +47,18 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 
 export default function Author() {
   const [authors, setAuthors] = useState([]);
-  const [name, setName] = useState("");
-  const [birthDate, setBirthDate] = useState("");
-  const [country, setCountry] = useState("");
+
   const [cities, setCities] = useState([]); // Şehirleri saklamak için
+  const [newAuthor, setNewAuthor] = useState({
+    name: "",
+    birthDate: "",
+    country: "",
+  });
 
   useEffect(() => {
-    axios
-      .get("http://localhost:8081/v1/authors")
-      .then((res) => {
-        setAuthors(res.data.data.items);
-      })
-      .catch((error) => {
-        console.error("Error fetching data", error);
-      });
-
-    // Şehirleri dinamik olarak getirme örneği
-    // axios.get('https://example.com/api/cities') // Eğer bir API'den alıyorsanız bu şekilde
-    //   .then((res) => {
-    //     setCities(res.data);
-    //   })
-    //   .catch((error) => {
-    //     console.error("Error fetching cities", error);
-    //   });
-
-    // Örnek şehir listesi
+    getAuthors().then((data) => {
+      setAuthors(data);
+    });
 
     setCities([
       "Istanbul",
@@ -87,25 +74,28 @@ export default function Author() {
     ]);
   }, []);
 
-  const handleAddAuthor = () => {
-    axios
-      .post("http://localhost:8081/v1/authors", {
-        name,
-        birthDate,
-        country,
-      })
-      .then((response) => {
-        // Yeni yazar ekledikten sonra formu sıfırla ve yazarları güncelle
-        setName("");
-        setBirthDate("");
-        setCountry("");
-        setAuthors([...authors, response.data]); // Yeni yazarı listeye ekle
-      })
-      .catch((error) => {
-        console.error("Error adding author", error);
-      });
+  const handleNewAuthor = (event) => {
+    setNewAuthor({
+      ...newAuthor,
+      [event.target.name]: event.target.value,
+    });
+  };
+
+  const handleCreate = async () => {
+    try {
+      // Doğrudan DatePicker'den dönen string formatını kullan
+      await createAuthor({ ...newAuthor, birthDate: selectedDate });
+      // Form alanlarını sıfırla
+      setNewAuthor({ name: "", birthDate: "", country: "" });
+      // Yazarlar listesini güncelle
+      const data = await getAuthors();
+      setAuthors(data);
+    } catch (error) {
+      console.error("Failed to create author:", error);
+    }
   };
   const [selectedDate, setSelectedDate] = useState(null);
+
   return (
     <>
       <Container maxWidth="lg" sx={{ pt: 5, pb: 5 }}>
@@ -145,25 +135,27 @@ export default function Author() {
                   id="name"
                   label="Name"
                   variant="outlined"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  value={newAuthor.name}
+                  onChange={handleNewAuthor}
+                  name="name"
                 />
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
-                <DatePicker
-        label="BirthDate"
-        value={selectedDate}
-        onChange={(newValue) => setSelectedDate(newValue)}
-        slots={{
-          textField: (params) => <TextField {...params} />
-        }}
-      />
+                  <DatePicker
+                    label="BirthDate"
+                    value={selectedDate}
+                    onChange={(newValue) => setSelectedDate(newValue)}
+                    slots={{
+                      textField: (params) => <TextField {...params} />,
+                    }}
+                  />
                 </LocalizationProvider>
 
                 <FormControl fullWidth>
                   <InputLabel>Country</InputLabel>
                   <Select
-                    value={country}
-                    onChange={(e) => setCountry(e.target.value)}
+                    value={newAuthor.country}
+                    onChange={handleNewAuthor}
+                    name="country"
                     label="Country"
                   >
                     {cities.map((city, index) => (
@@ -176,7 +168,7 @@ export default function Author() {
                 <Button
                   variant="contained"
                   sx={{ mt: 2, backgroundColor: "#4CAF50" }}
-                  onClick={handleAddAuthor}
+                  onClick={handleCreate}
                 >
                   Add
                 </Button>
