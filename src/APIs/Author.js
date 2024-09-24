@@ -17,7 +17,15 @@ export const getAuthors = async () => {
 
   export const deleteAuthor = async (id) => {
     const { data } = await axios.delete(
-      `${BASE_URL}/api/v1/authors/delete/${id}`
+      `${BASE_URL}/api/v1/authors/${id}`
+    );
+    return data;
+  };
+  
+  export const updateAuthor = async (author) => {
+    const { data } = await axios.put(
+      `${BASE_URL}/api/v1/authors/${author.id}`,
+      author
     );
     return data;
   };
