@@ -1,0 +1,13 @@
+
+.article{
+    display: flex;
+    justify-content: center;
+    align-items: start;
+    gap: 30px;
+}
+.p-search{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}

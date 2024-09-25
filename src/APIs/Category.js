@@ -2,12 +2,12 @@ import axios from "axios";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-export const getPublishers = async () => {
+export const getCategories = async () => {
     const { data } = await axios.get(BASE_URL + "/api/v1/categories");
     return data;
   };
   
-  export const createPublisher = async (category) => {
+  export const createCategory = async (category) => {
     const { data } = await axios.post(
       `${BASE_URL}/api/v1/categories`,
       category
@@ -15,14 +15,14 @@ export const getPublishers = async () => {
     return data;
   };
 
-  export const deletePublisher = async (id) => {
+  export const deleteCategory = async (id) => {
     const { data } = await axios.delete(
       `${BASE_URL}/api/v1/categories/${id}`
     );
     return data;
   };
   
-  export const updatePublisher = async (category) => {
+  export const updateCategory = async (category) => {
     const { data } = await axios.put(
       `${BASE_URL}/api/v1/categories/${category.id}`,
       category

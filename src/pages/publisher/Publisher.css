@@ -1,8 +1,5 @@
-.authorlist{
-    background: linear-gradient(135deg, #ffffff, #fae7d9);
-   
-}
-.author-section{
+
+.article{
     display: flex;
     justify-content: center;
     align-items: start;

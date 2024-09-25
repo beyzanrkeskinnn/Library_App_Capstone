@@ -203,7 +203,7 @@ export default function Publisher() {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
-      <div className="author-section">
+      <div className="article">
         <Box mb={2} border={"2px solid #4caf50"} p={5}>
           <FormControl fullWidth>
             <Box
