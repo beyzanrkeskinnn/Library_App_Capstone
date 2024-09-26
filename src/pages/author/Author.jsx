@@ -20,6 +20,11 @@ import {
   MenuItem,
   TablePagination,
   InputAdornment,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Snackbar,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -44,7 +49,8 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
     fontSize: 14,
   },
 }));
-const StyledSearchField = styled(TextField)({
+
+const StyledSearchField = styled(TextField)(() => ({
   width: "300px",
   "& .MuiInputBase-root": {
     height: "40px",
@@ -52,7 +58,7 @@ const StyledSearchField = styled(TextField)({
   "& .MuiInputBase-input": {
     padding: "10px",
   },
-});
+}));
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
   "&:nth-of-type(odd)": {
@@ -87,7 +93,11 @@ export default function Author() {
   const [selectedDate, setSelectedDate] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [searchTerm, setSearchTerm] = useState(""); // State for search term
+  const [searchTerm, setSearchTerm] = useState("");
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [authorToDelete, setAuthorToDelete] = useState(null);
+  const [openErrorDialog, setOpenErrorDialog] = useState(false); 
+  const [errorMessage, setErrorMessage] = useState(""); 
 
   useEffect(() => {
     getAuthors().then((data) => {
@@ -95,16 +105,13 @@ export default function Author() {
     });
 
     setCities([
-      "Istanbul",
-      "Ankara",
-      "Izmir",
-      "Bursa",
-      "Antalya",
-      "Adana",
-      "Konya",
-      "Gaziantep",
-      "Mersin",
-      "Diyarbakir",
+      "TACİKİSTAN",
+      "TANZANYA",
+      "TAYLAND",
+      "TAYVAN (Chinese Taipei)",
+      "TOGO",
+      "TONGA",
+      "TURKEY",
     ]);
   }, []);
 
@@ -117,7 +124,7 @@ export default function Author() {
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
-    setPage(0); // Reset page when search term changes
+    setPage(0); 
   };
 
   const filteredAuthors = authors.filter((author) => {
@@ -127,14 +134,18 @@ export default function Author() {
     );
   });
 
-  const handleDelete = async (id) => {
+  const handleDelete = async () => {
     try {
-      await deleteAuthor(id);
-      const data = await getAuthors();
-      setAuthors(data);
-      handleSuccessfulResponse("Author deleted successfully.", "success");
+      if (authorToDelete) {
+        await deleteAuthor(authorToDelete.id);
+        const data = await getAuthors();
+        setAuthors(data);
+        handleSuccessfulResponse("Author deleted successfully.", "success");
+        setOpenDeleteDialog(false);
+      }
     } catch (error) {
       handleAxiosError(error);
+      setOpenDeleteDialog(false);
     }
   };
 
@@ -157,6 +168,10 @@ export default function Author() {
       setSelectedDate(null);
       const data = await getAuthors();
       setAuthors(data);
+      handleSuccessfulResponse(
+        editMode ? "Author updated successfully." : "Author added successfully.",
+        "success"
+      );
     } catch (error) {
       handleAxiosError(error);
     }
@@ -174,16 +189,14 @@ export default function Author() {
   };
 
   const handleAxiosError = (error) => {
-    let errorMessage = "An error occurred.";
+    let errorMessage = "Please fill in all fields.";
     if (error.response.data.data) {
       errorMessage = error.response.data.data[0];
     } else if (error.response.data.message) {
       errorMessage = error.response.data.message;
     }
-    setNotification({ message: errorMessage, severity: "error" });
-    setTimeout(() => {
-      setNotification({ message: "", severity: "" });
-    }, 3000);
+    setErrorMessage(errorMessage);
+    setOpenErrorDialog(true); // Hata modalını aç
   };
 
   const handleSuccessfulResponse = (message, severity) => {
@@ -200,6 +213,11 @@ export default function Author() {
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
+  };
+
+  const openConfirmDeleteDialog = (author) => {
+    setAuthorToDelete(author);
+    setOpenDeleteDialog(true);
   };
 
   return (
@@ -287,7 +305,7 @@ export default function Author() {
                 </FormControl>
                 <Button
                   variant="contained"
-                  sx={{ mt: 2, backgroundColor: "#4CAF50" }}
+                  color="primary"
                   onClick={handleCreateOrUpdate}
                 >
                   {editMode ? "Update" : "Add"}
@@ -295,54 +313,50 @@ export default function Author() {
               </Box>
             </FormControl>
           </Box>
-
-          <TableContainer component={Paper} sx={{ maxHeight: 440 }}>
+          {/* Authors Table */}
+          <TableContainer component={Paper} sx={{ maxHeight: 600 }}>
             <Table stickyHeader aria-label="sticky table">
               <TableHead>
                 <TableRow>
                   <StyledTableCell>Name</StyledTableCell>
-                  <StyledTableCell align="right">Birthdate</StyledTableCell>
-                  <StyledTableCell align="right">Country</StyledTableCell>
-                  <StyledTableCell align="right">Edit / Delete</StyledTableCell>
+                  <StyledTableCell>BirthDate</StyledTableCell>
+                  <StyledTableCell>Country</StyledTableCell>
+                  <StyledTableCell>Actions</StyledTableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredAuthors.length > 0 ? (
-                  filteredAuthors
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((author) => (
-                      <StyledTableRow key={author.id}>
-                        <StyledTableCell component="th" scope="row">
-                          {author.name}
-                        </StyledTableCell>
-                        <StyledTableCell align="right">
-                          {author.birthDate
-                            ? format(parseISO(author.birthDate), "dd/MM/yyyy")
-                            : ""}
-                        </StyledTableCell>
-                        <StyledTableCell align="right">
-                          {author.country}
-                        </StyledTableCell>
-                        <StyledTableCell align="right">
-                          <EditIcon onClick={() => handleEdit(author)} />
-                          <DeleteIcon onClick={() => handleDelete(author.id)} />
-                        </StyledTableCell>
-                      </StyledTableRow>
-                    ))
-                ) : (
-                  <StyledTableRow>
-                    <StyledTableCell colSpan={4} align="center">
-                      No data available
-                    </StyledTableCell>
-                  </StyledTableRow>
-                )}
+                {filteredAuthors
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((author) => (
+                    <StyledTableRow key={author.id}>
+                      <TableCell>{author.name}</TableCell>
+                      <TableCell>{format(parseISO(author.birthDate), "yyyy-MM-dd")}</TableCell>
+                      <TableCell>{author.country}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="outlined"
+                          color="primary"
+                          onClick={() => handleEdit(author)}
+                        >
+                          <EditIcon />
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          sx={{ ml: 1 }}
+                          onClick={() => openConfirmDeleteDialog(author)}
+                        >
+                          <DeleteIcon />
+                        </Button>
+                      </TableCell>
+                    </StyledTableRow>
+                  ))}
               </TableBody>
             </Table>
-
             <StickyPagination
-              rowsPerPageOptions={[10, 25, 50]}
+              rowsPerPageOptions={[5, 10, 25]}
               component="div"
-              count={filteredAuthors.length} // Use filtered count
+              count={filteredAuthors.length}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}
@@ -350,6 +364,66 @@ export default function Author() {
             />
           </TableContainer>
         </div>
+
+       
+        <Snackbar
+          open={notification.message !== ""}
+          autoHideDuration={6000}
+          onClose={() => setNotification({ message: "", severity: "" })}
+          message={notification.message}
+          severity={notification.severity}
+          sx={{
+            "& .MuiSnackbarContent-root": {
+              backgroundColor: 'green', 
+              color: 'white',
+            }
+          }}
+        />
+
+       
+        <Dialog
+          open={openErrorDialog}
+          onClose={() => setOpenErrorDialog(false)}
+        >
+          <DialogTitle>Error</DialogTitle>
+          <DialogContent>
+            {errorMessage}
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => setOpenErrorDialog(false)}
+              color="primary"
+            >
+              Close
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        
+        <Dialog
+          open={openDeleteDialog}
+          onClose={() => setOpenDeleteDialog(false)}
+        >
+          <DialogTitle>Confirm Delete</DialogTitle>
+          <DialogContent>
+            Are you sure you want to delete this author?
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => setOpenDeleteDialog(false)}
+              color="primary"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDelete}
+              color="secondary"
+              autoFocus
+            >
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Container>
     </>
   );
