@@ -22,10 +22,15 @@ export const getCategories = async () => {
     return data;
   };
   
+ 
   export const updateCategory = async (category) => {
-    const { data } = await axios.put(
-      `${BASE_URL}/api/v1/categories/${category.id}`,
-      category
-    );
-    return data;
+    try {
+      const response = await axios.put(`${BASE_URL}/api/v1/categories/${category.id}`, category);
+      return response.data;
+    } catch (error) {
+      // Hata mesajını ayrıntılı şekilde logla
+      console.error("Error updating category:", error.response?.data || error.message);
+      throw error;
+    }
   };
+  

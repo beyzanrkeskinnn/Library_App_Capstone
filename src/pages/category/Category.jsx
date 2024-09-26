@@ -17,12 +17,16 @@ import {
   FormControl,
   InputAdornment,
   TablePagination,
+  Snackbar,
+  Modal,
+  Fade,
+  Backdrop,
+  Alert,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import SearchIcon from "@mui/icons-material/Search";
-import { useEffect, useState } from "react";
-
+import { useEffect, useState, useCallback } from "react";
 import {
   getCategories,
   createCategory,
@@ -63,18 +67,27 @@ export default function Category() {
     message: "",
     severity: "",
   });
+  const [modalOpen, setModalOpen] = useState(false);
+  const [deleteCategoryId, setDeleteCategoryId] = useState(null);
+  const [loading, setLoading] = useState(false);
+
   const handleAxiosError = (error) => {
-    let errorMessage = "An error occurred.";
-    if (error.response?.data?.data) {
-      errorMessage = error.response.data.data[0];
-    } else if (error.response?.data?.message) {
-      errorMessage = error.response.data.message;
+    let errorMessage = "Bir hata oluştu.";
+    if (error.response) {
+      if (error.response.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response.data?.data) {
+        errorMessage = error.response.data.data[0] || "Bir hata oluştu.";
+      } else {
+        errorMessage = error.message;
+      }
+    } else {
+      errorMessage = error.message;
     }
+    console.error("Hata detayları:", error);
     setNotification({ message: errorMessage, severity: "error" });
-    setTimeout(() => {
-      setNotification({ message: "", severity: "" });
-    }, 3000);
   };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setNewCategory({
@@ -97,16 +110,26 @@ export default function Category() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const dataToSend = {
-        ...newCategory,
+        name: newCategory.name,
+        description: newCategory.description,
       };
 
       if (editingCategoryId) {
         await updateCategory({ id: editingCategoryId, ...dataToSend });
+        setNotification({
+          message: "Category updated successfully!",
+          severity: "success",
+        });
         setEditingCategoryId(null);
       } else {
         await createCategory(dataToSend);
+        setNotification({
+          message: "Category added successfully!",
+          severity: "success",
+        });
       }
 
       setNewCategory({
@@ -118,29 +141,44 @@ export default function Category() {
       setCategories(data);
     } catch (error) {
       handleAxiosError(error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDelete = async (categoryId) => {
-    if (window.confirm("Are you sure you want to delete this category?")) {
-      try {
-        await deleteCategory(categoryId);
+  const handleDelete = useCallback(async () => {
+    if (!deleteCategoryId) return;
 
+    try {
+      setLoading(true);
+      const response = await deleteCategory(deleteCategoryId);
+
+      // Hata mesajını yanıt içeriğinden kontrol et
+      if (response.data && response.data.message) {
         setNotification({
-          message: "Category deleted successfully!",
+          message: response.data.message,
+          severity: "error",
+        });
+      } else {
+        setNotification({
+          message: "Kategori başarıyla silindi!",
           severity: "success",
         });
-        setTimeout(() => {
-          setNotification({ message: "", severity: "" });
-        }, 3000);
-
-        const updatedCategories = await getCategories();
-        setCategories(updatedCategories);
-      } catch (error) {
-        handleAxiosError(error);
       }
+
+      setModalOpen(false);
+      setDeleteCategoryId(null);
+
+      const updatedCategories = await getCategories();
+      setCategories(updatedCategories);
+    } catch (error) {
+      handleAxiosError(error);
+      setModalOpen(false);
+      setDeleteCategoryId(null);
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [deleteCategoryId]);
 
   const filteredCategories = categories.filter((category) => {
     const searchValue = searchTerm.toLowerCase();
@@ -208,8 +246,8 @@ export default function Category() {
                 name="name"
                 value={newCategory.name}
                 onChange={handleChange}
+                required
               />
-
               <TextField
                 id="description"
                 label="Description"
@@ -218,7 +256,12 @@ export default function Category() {
                 value={newCategory.description}
                 onChange={handleChange}
               />
-              <Button type="submit" variant="contained" color="primary">
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                disabled={loading}
+              >
                 {editingCategoryId ? "Update Category" : "Add Category"}
               </Button>
             </Box>
@@ -252,7 +295,10 @@ export default function Category() {
                           style={{ cursor: "pointer" }}
                         />
                         <DeleteIcon
-                          onClick={() => handleDelete(category.id)}
+                          onClick={() => {
+                            setDeleteCategoryId(category.id);
+                            setModalOpen(true);
+                          }}
                           style={{ cursor: "pointer" }}
                         />
                       </StyledTableCell>
@@ -268,7 +314,7 @@ export default function Category() {
             </TableBody>
           </Table>
           <TablePagination
-            rowsPerPageOptions={[10, 25, 50]}
+            rowsPerPageOptions={[10, 25, 100]}
             component="div"
             count={filteredCategories.length}
             rowsPerPage={rowsPerPage}
@@ -281,6 +327,72 @@ export default function Category() {
           />
         </TableContainer>
       </div>
+
+      <Modal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        closeAfterTransition
+        BackdropComponent={Backdrop}
+        BackdropProps={{
+          timeout: 500,
+        }}
+      >
+        <Fade in={modalOpen}>
+          <Box
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: 400,
+              bgcolor: "background.paper",
+              boxShadow: 24,
+              p: 4,
+            }}
+          >
+            <Typography variant="h6" component="h2">
+              Kategoriyi silmek istediğinizden emin misiniz?
+            </Typography>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                pt: 2,
+              }}
+            >
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleDelete}
+                disabled={loading}
+              >
+                {loading ? "Siliniyor..." : "Sil"}
+              </Button>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() => setModalOpen(false)}
+                sx={{ ml: 2 }}
+              >
+                İptal
+              </Button>
+            </Box>
+          </Box>
+        </Fade>
+      </Modal>
+
+      <Snackbar
+        open={Boolean(notification.message)}
+        autoHideDuration={6000}
+        onClose={() => setNotification({ message: "", severity: "" })}
+      >
+        <Alert
+          onClose={() => setNotification({ message: "", severity: "" })}
+          severity={notification.severity}
+        >
+          {notification.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 }

@@ -196,7 +196,7 @@ export default function Author() {
       errorMessage = error.response.data.message;
     }
     setErrorMessage(errorMessage);
-    setOpenErrorDialog(true); // Hata modalını aç
+    setOpenErrorDialog(true); 
   };
 
   const handleSuccessfulResponse = (message, severity) => {
