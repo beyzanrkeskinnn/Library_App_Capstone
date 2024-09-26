@@ -1,5 +1,4 @@
 import "./Book.css";
-
 import {
   CardActions,
   Card,
@@ -9,35 +8,80 @@ import {
   Typography,
   Container,
 } from "@mui/material";
+import { getBooks, deleteBook } from "../../APIs/Book";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function Book() {
+  const [books, setBooks] = useState([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    getBooks().then((data) => {
+      setBooks(data);
+    });
+  }, []);
+
+  const handleAddBook = () => {
+    navigate("/add-book");
+  };
+
+  const handleDeleteBook = (bookId) => {
+    if (window.confirm("Bu kitabı silmek istediğinize emin misiniz?")) {
+      deleteBook(bookId)
+        .then(() => {
+          setBooks((prevBooks) =>
+            prevBooks.filter((book) => book.id !== bookId)
+          );
+        })
+        .catch((error) => {
+          console.error("Kitap silme hatası:", error);
+          alert("Kitap silme işlemi başarısız oldu.");
+        });
+    }
+  };
+
   return (
-    <div>
-      <Container maxWidth="md" sx={{ pt: 5, pb: 5 }}>
-        <Card sx={{ maxWidth: 345 }}>
+    <Container maxWidth="md" sx={{ pt: 5, pb: 5 }}>
+      <Button onClick={handleAddBook}>Ekle</Button>
+      {books.map((book) => (
+        <Card sx={{ maxWidth: 345, mb: 3 }} key={book.id}>
           <CardMedia
             sx={{ height: 140 }}
-            image="/img/yazar.jpg"
-            title="green iguana"
+            image={book.image || "/img/yazar.jpg"}
+            title={book.title}
           />
           <CardContent>
             <Typography gutterBottom variant="h5" component="div">
-              Canan Tan
+              {book.name}
             </Typography>
             <Typography variant="body2" sx={{ color: "text.secondary" }}>
-              Türkiye
+              {book.publicationYear}
             </Typography>
             <Typography variant="body2" sx={{ color: "text.secondary" }}>
-              Birtday
+              {book.stock}
             </Typography>
           </CardContent>
           <CardActions>
-            <Button size="small">Share</Button>
-            <Button size="small">Learn More</Button>
+            <Button
+              size="small"
+              onClick={() => navigate(`/edit-book/${book.id}`)}
+            >
+              Edit
+            </Button>
+            <Button
+              size="small"
+              onClick={() => navigate(`/book-details/${book.id}`)}
+            >
+              Detay
+            </Button>
+            <Button size="small" onClick={() => handleDeleteBook(book.id)}>
+              Delete
+            </Button>
           </CardActions>
         </Card>
-      </Container>
-    </div>
+      ))}
+    </Container>
   );
 }
 

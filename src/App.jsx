@@ -6,6 +6,9 @@ import Navbar from "./components/Navbar";
 import Home from "./pages/home/Home";
 import Footer from "./components/Footer";
 import Book from "./pages/book/Book";
+import AddBook from "./pages/book/AddBook";
+import EditBook from "./pages/book/EditBook";
+import BookDetails from "./pages/book/BookDetails";
 import Author from "./pages/author/Author";
 import Publisher from "./pages/publisher/Publisher";
 import Category from "./pages/category/Category";
@@ -35,6 +38,9 @@ function App() {
             <Route path="publisher/*" element={<Publisher />} />
             <Route path="category/*" element={<Category />} />
             <Route path="borrowing/*" element={<Borrowing />} />
+            <Route path="/add-book" element={<AddBook />} />
+            <Route path="/edit-book/:bookId" element={<EditBook />} />
+            <Route path="/book-details/:bookId" element={<BookDetails />} /> 
           </Routes>
         </div>
       )}
