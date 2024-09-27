@@ -332,7 +332,7 @@ function Book() {
               autoFocus
               margin="dense"
               name="name"
-              label="Kitap Adı"
+              label="Book Name"
               type="text"
               fullWidth
               value={bookData.name}
@@ -341,7 +341,7 @@ function Book() {
             />
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               <DatePicker
-                label="Yayın Yılı"
+                label="Publication Year"
                 value={
                   bookData.publicationYear
                     ? new Date(bookData.publicationYear, 0)
@@ -356,7 +356,7 @@ function Book() {
             <TextField
               margin="dense"
               name="stock"
-              label="Stok"
+              label="Stock"
               type="number"
               fullWidth
               value={bookData.stock}
@@ -364,7 +364,7 @@ function Book() {
               required
             />
             <FormControl fullWidth margin="dense">
-              <InputLabel>Yazar</InputLabel>
+              <InputLabel>Author</InputLabel>
               <Select
                 name="authorId"
                 value={bookData.authorId}
@@ -379,7 +379,7 @@ function Book() {
               </Select>
             </FormControl>
             <FormControl fullWidth margin="dense">
-              <InputLabel>Yayınevi</InputLabel>
+              <InputLabel>Publisher</InputLabel>
               <Select
                 name="publisherId"
                 value={bookData.publisherId}
@@ -394,6 +394,7 @@ function Book() {
               </Select>
             </FormControl>
             <FormGroup>
+              <Typography>Categories Select</Typography>
               {categories.map((category) => (
                 <FormControlLabel
                   key={category.id}
@@ -412,8 +413,8 @@ function Book() {
               ))}
             </FormGroup>
             <DialogActions>
-              <Button onClick={handleCloseModal}>İptal</Button>
-              <Button type="submit">Kaydet</Button>
+              <Button onClick={handleCloseModal}>Cancel</Button>
+              <Button type="submit">Save</Button>
             </DialogActions>
           </form>
         </DialogContent>
@@ -422,15 +423,15 @@ function Book() {
         open={deleteConfirmOpen}
         onClose={() => setDeleteConfirmOpen(false)}
       >
-        <DialogTitle>Kitap Sil</DialogTitle>
+        <DialogTitle>Book Delete</DialogTitle>
         <DialogContent>
           <Typography>
-            {bookToDelete?.name} kitabını silmek istediğinize emin misiniz?
+            Are you sure you want to delete the  {bookToDelete?.name} book?
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteConfirmOpen(false)}>İptal</Button>
-          <Button onClick={confirmDelete}>Sil</Button>
+          <Button onClick={() => setDeleteConfirmOpen(false)}>Cansel</Button>
+          <Button onClick={confirmDelete}>Delete</Button>
         </DialogActions>
       </Dialog>
       <Snackbar

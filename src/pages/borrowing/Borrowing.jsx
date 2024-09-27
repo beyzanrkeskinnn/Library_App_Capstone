@@ -224,30 +224,13 @@ export default function Borrowing() {
       >
         Borrows
       </Typography>
-      <Box mb={2} textAlign="center">
-        <Typography variant="body2" pb={2}>
-          Search through borrow records.
-        </Typography>
-        <TextField
-          variant="outlined"
-          placeholder="Search..."
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
-              </InputAdornment>
-            ),
-          }}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </Box>
+    
       <Box
         component="form"
         sx={{
           "& > :not(style)": { m: 1, width: "30ch" },
           display: "flex",
-          flexDirection: "column",
+          justifyContent:"center"
         }}
         noValidate
         autoComplete="off"
@@ -304,14 +287,29 @@ export default function Borrowing() {
         </FormControl>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
           <Button type="submit" variant="contained" color="primary">
-            {selectedBorrow ? "Update Borrow" : "Add Borrow"}
+            {selectedBorrow ? "Update" : "Add"}
           </Button>
           <Button type="button" variant="outlined" color="secondary" onClick={handleClear}>
             Clear
           </Button>
         </Box>
       </Box>
-
+      <Box mb={2} textAlign="right" pt={3}>
+       
+       <TextField
+         variant="outlined"
+         placeholder="Search..."
+         InputProps={{
+           startAdornment: (
+             <InputAdornment position="start">
+               <SearchIcon />
+             </InputAdornment>
+           ),
+         }}
+         value={searchTerm}
+         onChange={(e) => setSearchTerm(e.target.value)}
+       />
+     </Box>
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
@@ -343,24 +341,21 @@ export default function Borrowing() {
                       onClick={() => handleEdit(borrow)}
                       startIcon={<EditIcon />}
                       color="primary"
-                      variant="outlined"
+                    
                     >
-                      Edit
                     </Button>
                     <Button
                       onClick={() => handleDelete(borrow.id)}
                       startIcon={<DeleteIcon />}
-                      color="secondary"
-                      variant="outlined"
+                      color="error"
+                      
                       sx={{ ml: 1 }}
                     >
-                      Delete
                     </Button>
                     <Typography
                       variant="caption"
                       sx={{
-                        display: 'block',
-                        mt: 1,
+                       
                         color: statusColor,
                         fontWeight: 'bold',
                       }}

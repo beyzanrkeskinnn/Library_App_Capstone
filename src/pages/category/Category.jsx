@@ -351,7 +351,7 @@ export default function Category() {
             }}
           >
             <Typography variant="h6" component="h2">
-              Kategoriyi silmek istediğinizden emin misiniz?
+            Are you sure you want to delete the category?
             </Typography>
             <Box
               sx={{
@@ -359,23 +359,24 @@ export default function Category() {
                 justifyContent: "flex-end",
                 pt: 2,
               }}
-            >
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleDelete}
-                disabled={loading}
-              >
-                {loading ? "Siliniyor..." : "Sil"}
-              </Button>
+            ><Button
+            variant="contained"
+            color="primary"
+            onClick={handleDelete}
+            disabled={loading}
+          >
+            {loading ? "Is being deleted..." : "Delete"}
+          </Button>
               <Button
                 variant="outlined"
                 color="secondary"
                 onClick={() => setModalOpen(false)}
                 sx={{ ml: 2 }}
               >
-                İptal
+               Close
               </Button>
+              
+              
             </Box>
           </Box>
         </Fade>
