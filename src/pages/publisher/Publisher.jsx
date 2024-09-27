@@ -1,11 +1,10 @@
-import {
+import { 
   Typography,
   Container,
   Table,
   TableBody,
   TableCell,
   TableContainer,
-  tableCellClasses,
   TableHead,
   TableRow,
   Paper,
@@ -16,6 +15,11 @@ import {
   FormControl,
   InputAdornment,
   TablePagination,
+  Snackbar,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -23,29 +27,25 @@ import SearchIcon from "@mui/icons-material/Search";
 import { useEffect, useState } from "react";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import {
-  getPublishers,
-  createPublisher,
-  deletePublisher,
-  updatePublisher,
-} from "../../APIs/Publisher";
-import { parseISO, format } from "date-fns";
+import { getPublishers, createPublisher, deletePublisher, updatePublisher } from "../../APIs/Publisher";
+import { parseISO } from "date-fns";
 
 // Stil kodları
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
-  [`&.${tableCellClasses.head}`]: {
-    backgroundColor: "#d47a33",
+  '&.MuiTableCell-head': {
+    backgroundColor: '#d47a33',
     color: theme.palette.common.white,
   },
-  [`&.${tableCellClasses.body}`]: {
+  '&.MuiTableCell-body': {
     fontSize: 14,
   },
 }));
+
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  "&:nth-of-type(odd)": {
+  '&:nth-of-type(odd)': {
     backgroundColor: theme.palette.action.hover,
   },
-  "&:last-child td, &:last-child th": {
+  '&:last-child td, &:last-child th': {
     border: 0,
   },
 }));
@@ -65,6 +65,8 @@ export default function Publisher() {
     message: "",
     severity: "",
   });
+  const [errorDialogOpen, setErrorDialogOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -105,7 +107,6 @@ export default function Publisher() {
       };
 
       if (editingPublisher) {
-        console.log("Updating publisher with ID:", editingPublisher);
         await updatePublisher({ id: editingPublisher, ...dataToSend });
         setEditingPublisher(null);
       } else {
@@ -120,23 +121,46 @@ export default function Publisher() {
 
       const data = await getPublishers();
       setPublishers(data);
+
+      setNotification({
+        message: `Publisher ${editingPublisher ? 'updated' : 'added'} successfully!`,
+        severity: "success",
+      });
+      setTimeout(() => {
+        setNotification({ message: "", severity: "" });
+      }, 3000);
     } catch (error) {
       handleAxiosError(error);
     }
   };
 
-  const handleAxiosError = (error) => {
-    let errorMessage = "An error occurred.";
-    if (error.response?.data?.data) {
-      errorMessage = error.response.data.data[0];
-    } else if (error.response?.data?.message) {
-      errorMessage = error.response.data.message;
-    }
-    setNotification({ message: errorMessage, severity: "error" });
-    setTimeout(() => {
-      setNotification({ message: "", severity: "" });
-    }, 3000);
+  const handleClear = () => {
+    setNewPublisher({
+      name: "",
+      establishmentYear: null,
+      address: "",
+    });
+    setEditingPublisher(null);
   };
+
+  const handleAxiosError = (error) => {
+    let errorMessage = "Bir hata oluştu.";
+    if (error.response) {
+      if (error.response.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response.data?.data) {
+        errorMessage = error.response.data.data[0] || "Bir hata oluştu.";
+      } else {
+        errorMessage = error.message;
+      }
+    } else {
+      errorMessage = error.message;
+    }
+    console.error("Hata detayları:", error);
+    setErrorMessage(errorMessage);
+    setErrorDialogOpen(true);
+  };
+
   const handleDelete = async (publisherId) => {
     if (window.confirm("Are you sure you want to delete this publisher?")) {
       try {
@@ -166,6 +190,7 @@ export default function Publisher() {
       publisher.establishmentYear.toString().includes(searchValue)
     );
   });
+
   useEffect(() => {
     getPublishers().then((data) => {
       setPublishers(data);
@@ -245,62 +270,62 @@ export default function Publisher() {
               <Button type="submit" variant="contained" color="primary">
                 {editingPublisher ? "Update Publisher" : "Add Publisher"}
               </Button>
+              <Button
+                type="button"
+                variant="outlined"
+                color="secondary"
+                onClick={handleClear}
+                sx={{ mt: 2 }}
+              >
+                Clear
+              </Button>
             </Box>
           </FormControl>
         </Box>
 
-        <TableContainer component={Paper} sx={{ maxHeight: 440 }}>
-          <Table stickyHeader aria-label="sticky table">
+        <TableContainer component={Paper} sx={{ mt: 2 }}>
+          <Table>
             <TableHead>
               <TableRow>
                 <StyledTableCell>Name</StyledTableCell>
-                <StyledTableCell align="right">
-                  Establishment Year
-                </StyledTableCell>
-                <StyledTableCell align="right">Address</StyledTableCell>
-                <StyledTableCell align="center">Actions</StyledTableCell>
+                <StyledTableCell>Establishment Year</StyledTableCell>
+                <StyledTableCell>Address</StyledTableCell>
+                <StyledTableCell>Actions</StyledTableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredPublishers.length > 0 ? (
-                filteredPublishers
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((publisher) => (
-                    <StyledTableRow key={publisher.id}>
-                      <StyledTableCell component="th" scope="row">
-                        {publisher.name}
-                      </StyledTableCell>
-                      <StyledTableCell align="right">
-                        {publisher.establishmentYear}
-                      </StyledTableCell>
-                      <StyledTableCell align="right">
-                        {publisher.address}
-                      </StyledTableCell>
-                      <StyledTableCell align="center">
-                        <EditIcon
-                          onClick={() => handleEdit(publisher)}
-                          style={{ cursor: "pointer" }}
-                        />
-                        <DeleteIcon
-                          onClick={() => handleDelete(publisher.id)}
-                          style={{ cursor: "pointer" }}
-                        />
-                      </StyledTableCell>
-                    </StyledTableRow>
-                  ))
-              ) : (
-                <StyledTableRow>
-                  <StyledTableCell colSpan={4} align="center">
-                    No data available
+              {filteredPublishers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((publisher) => (
+                <StyledTableRow key={publisher.id}>
+                  <StyledTableCell>{publisher.name}</StyledTableCell>
+                  <StyledTableCell>{publisher.establishmentYear}</StyledTableCell>
+                  <StyledTableCell>{publisher.address}</StyledTableCell>
+                  <StyledTableCell>
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      onClick={() => handleEdit(publisher)}
+                      startIcon={<EditIcon />}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      onClick={() => handleDelete(publisher.id)}
+                      startIcon={<DeleteIcon />}
+                      sx={{ ml: 2 }}
+                    >
+                      Delete
+                    </Button>
                   </StyledTableCell>
                 </StyledTableRow>
-              )}
+              ))}
             </TableBody>
           </Table>
           <TablePagination
             rowsPerPageOptions={[10, 25, 50]}
             component="div"
-            count={filteredPublishers.length} // Filtrelenmiş yayıncıların sayısını göster
+            count={filteredPublishers.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={(event, newPage) => setPage(newPage)}
@@ -311,6 +336,27 @@ export default function Publisher() {
           />
         </TableContainer>
       </div>
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={Boolean(notification.message)}
+        autoHideDuration={6000}
+        onClose={() => setNotification({ message: "", severity: "" })}
+        message={notification.message}
+        severity={notification.severity}
+      />
+
+      {/* Error Dialog */}
+      <Dialog
+        open={errorDialogOpen}
+        onClose={() => setErrorDialogOpen(false)}
+      >
+        <DialogTitle>Error</DialogTitle>
+        <DialogContent>{errorMessage}</DialogContent>
+        <DialogActions>
+          <Button onClick={() => setErrorDialogOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }

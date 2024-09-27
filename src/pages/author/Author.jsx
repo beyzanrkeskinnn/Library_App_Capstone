@@ -96,8 +96,8 @@ export default function Author() {
   const [searchTerm, setSearchTerm] = useState("");
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [authorToDelete, setAuthorToDelete] = useState(null);
-  const [openErrorDialog, setOpenErrorDialog] = useState(false); 
-  const [errorMessage, setErrorMessage] = useState(""); 
+  const [openErrorDialog, setOpenErrorDialog] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     getAuthors().then((data) => {
@@ -124,7 +124,7 @@ export default function Author() {
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
-    setPage(0); 
+    setPage(0);
   };
 
   const filteredAuthors = authors.filter((author) => {
@@ -189,14 +189,21 @@ export default function Author() {
   };
 
   const handleAxiosError = (error) => {
-    let errorMessage = "Please fill in all fields.";
-    if (error.response.data.data) {
-      errorMessage = error.response.data.data[0];
-    } else if (error.response.data.message) {
-      errorMessage = error.response.data.message;
+    let errorMessage = "Bir hata oluştu.";
+    if (error.response) {
+      if (error.response.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response.data?.data) {
+        errorMessage = error.response.data.data[0] || "Bir hata oluştu.";
+      } else {
+        errorMessage = error.message;
+      }
+    } else {
+      errorMessage = error.message;
     }
+    console.error("Hata detayları:", error);
     setErrorMessage(errorMessage);
-    setOpenErrorDialog(true); 
+    setOpenErrorDialog(true);
   };
 
   const handleSuccessfulResponse = (message, severity) => {
@@ -218,6 +225,13 @@ export default function Author() {
   const openConfirmDeleteDialog = (author) => {
     setAuthorToDelete(author);
     setOpenDeleteDialog(true);
+  };
+
+  const handleClear = () => {
+    setNewAuthor({ name: "", birthDate: null, country: "" });
+    setSelectedDate(null);
+    setEditMode(false);
+    setSelectedAuthorId(null);
   };
 
   return (
@@ -270,56 +284,63 @@ export default function Author() {
                 autoComplete="off"
               >
                 <TextField
-                  id="name"
                   label="Name"
+                  name="name"
                   variant="outlined"
                   value={newAuthor.name}
                   onChange={handleNewAuthor}
-                  name="name"
                 />
                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                   <DatePicker
-                    label="BirthDate"
+                    label="Birth Date"
                     value={selectedDate}
                     onChange={(newValue) => setSelectedDate(newValue)}
-                    slots={{
-                      textField: (params) => <TextField {...params} />,
-                    }}
+                    renderInput={(params) => <TextField {...params} />}
                   />
                 </LocalizationProvider>
-
                 <FormControl fullWidth>
                   <InputLabel>Country</InputLabel>
                   <Select
+                    label="Country"
+                    name="country"
                     value={newAuthor.country}
                     onChange={handleNewAuthor}
-                    name="country"
-                    label="Country"
                   >
-                    {cities.map((city, index) => (
-                      <MenuItem key={index} value={city}>
+                    {cities.map((city) => (
+                      <MenuItem key={city} value={city}>
                         {city}
                       </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={handleCreateOrUpdate}
-                >
-                  {editMode ? "Update" : "Add"}
-                </Button>
+                <Box display="flex" justifyContent="center" gap={2} mt={2}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleCreateOrUpdate}
+                  >
+                    {editMode ? "Update Author" : "Add Author"}
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    onClick={handleClear}
+                  >
+                    Clear
+                  </Button>
+                </Box>
               </Box>
             </FormControl>
           </Box>
-          {/* Authors Table */}
-          <TableContainer component={Paper} sx={{ maxHeight: 600 }}>
-            <Table stickyHeader aria-label="sticky table">
+          <TableContainer
+            component={Paper}
+            sx={{ maxHeight: "400px", mt: 2 }}
+          >
+            <Table stickyHeader>
               <TableHead>
                 <TableRow>
                   <StyledTableCell>Name</StyledTableCell>
-                  <StyledTableCell>BirthDate</StyledTableCell>
+                  <StyledTableCell>Birth Date</StyledTableCell>
                   <StyledTableCell>Country</StyledTableCell>
                   <StyledTableCell>Actions</StyledTableCell>
                 </TableRow>
@@ -330,23 +351,24 @@ export default function Author() {
                   .map((author) => (
                     <StyledTableRow key={author.id}>
                       <TableCell>{author.name}</TableCell>
-                      <TableCell>{format(parseISO(author.birthDate), "yyyy-MM-dd")}</TableCell>
+                      <TableCell>
+                        {format(parseISO(author.birthDate), "yyyy-MM-dd")}
+                      </TableCell>
                       <TableCell>{author.country}</TableCell>
                       <TableCell>
                         <Button
-                          variant="outlined"
                           color="primary"
+                          startIcon={<EditIcon />}
                           onClick={() => handleEdit(author)}
                         >
-                          <EditIcon />
+                          Edit
                         </Button>
                         <Button
-                          variant="outlined"
-                          color="error"
-                          sx={{ ml: 1 }}
+                          color="secondary"
+                          startIcon={<DeleteIcon />}
                           onClick={() => openConfirmDeleteDialog(author)}
                         >
-                          <DeleteIcon />
+                          Delete
                         </Button>
                       </TableCell>
                     </StyledTableRow>
@@ -354,7 +376,7 @@ export default function Author() {
               </TableBody>
             </Table>
             <StickyPagination
-              rowsPerPageOptions={[5, 10, 25]}
+              rowsPerPageOptions={[10, 25, 50]}
               component="div"
               count={filteredAuthors.length}
               rowsPerPage={rowsPerPage}
@@ -364,67 +386,46 @@ export default function Author() {
             />
           </TableContainer>
         </div>
-
-       
-        <Snackbar
-          open={notification.message !== ""}
-          autoHideDuration={6000}
-          onClose={() => setNotification({ message: "", severity: "" })}
-          message={notification.message}
-          severity={notification.severity}
-          sx={{
-            "& .MuiSnackbarContent-root": {
-              backgroundColor: 'green', 
-              color: 'white',
-            }
-          }}
-        />
-
-       
-        <Dialog
-          open={openErrorDialog}
-          onClose={() => setOpenErrorDialog(false)}
-        >
-          <DialogTitle>Error</DialogTitle>
-          <DialogContent>
-            {errorMessage}
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={() => setOpenErrorDialog(false)}
-              color="primary"
-            >
-              Close
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        
-        <Dialog
-          open={openDeleteDialog}
-          onClose={() => setOpenDeleteDialog(false)}
-        >
-          <DialogTitle>Confirm Delete</DialogTitle>
-          <DialogContent>
-            Are you sure you want to delete this author?
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={() => setOpenDeleteDialog(false)}
-              color="primary"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleDelete}
-              color="secondary"
-              autoFocus
-            >
-              Delete
-            </Button>
-          </DialogActions>
-        </Dialog>
       </Container>
+      {/* Error Dialog */}
+      <Dialog open={openErrorDialog} onClose={() => setOpenErrorDialog(false)}>
+        <DialogTitle>Error</DialogTitle>
+        <DialogContent>
+          <Typography>{errorMessage}</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenErrorDialog(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+      {/* Confirmation Dialog */}
+      <Dialog
+        open={openDeleteDialog}
+        onClose={() => setOpenDeleteDialog(false)}
+      >
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <Typography>Are you sure you want to delete this author?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDeleteDialog(false)}>Cancel</Button>
+          <Button color="error" onClick={handleDelete}>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* Notification Snackbar */}
+      <Snackbar
+        open={notification.message.length > 0}
+        autoHideDuration={6000}
+        onClose={() => setNotification({ message: "", severity: "" })}
+        message={notification.message}
+        action={
+          <Button color="inherit" onClick={() => setNotification({ message: "", severity: "" })}>
+            Close
+          </Button>
+        }
+        severity={notification.severity}
+      />
     </>
   );
 }

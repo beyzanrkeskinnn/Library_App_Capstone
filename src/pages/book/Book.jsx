@@ -1,4 +1,4 @@
-import "./Book.css";
+import React, { useEffect, useState } from "react";
 import {
   CardActions,
   Card,
@@ -7,49 +7,222 @@ import {
   Button,
   Typography,
   Container,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Checkbox,
+  FormGroup,
+  FormControlLabel,
+  Snackbar,
+  Alert,
 } from "@mui/material";
-import { getBooks, deleteBook } from "../../APIs/Book";
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getBooks, deleteBook, getAuthors, getPublishers, getCategories, addBook, updateBook } from "../../APIs/Book";
+import { DatePicker } from "@mui/x-date-pickers";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 
 function Book() {
   const [books, setBooks] = useState([]);
-  const navigate = useNavigate();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [selectedBook, setSelectedBook] = useState(null);
+  const [bookData, setBookData] = useState({
+    name: "",
+    publicationYear: "",
+    stock: "",
+    authorId: "",
+    publisherId: "",
+    categoryIds: [],
+  });
+  const [authors, setAuthors] = useState([]);
+  const [publishers, setPublishers] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [notification, setNotification] = useState({
+    message: "",
+    severity: "",
+  });
+
+  // Onay modalı için durumlar
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [bookToDelete, setBookToDelete] = useState(null);
+
+  
 
   useEffect(() => {
-    getBooks().then((data) => {
-      setBooks(data);
-    });
+    const fetchData = async () => {
+      try {
+        const booksData = await getBooks();
+        setBooks(booksData);
+
+        const [authorsData, publishersData, categoriesData] = await Promise.all(
+          [getAuthors(), getPublishers(), getCategories()]
+        );
+
+        setAuthors(authorsData);
+        setPublishers(publishersData);
+        setCategories(categoriesData);
+      } catch (error) {
+        handleAxiosError(error);
+      }
+    };
+
+    fetchData();
   }, []);
 
-  const handleAddBook = () => {
-    navigate("/add-book");
+  const handleOpenModal = (book = null) => {
+    setIsEditing(!!book);
+    setSelectedBook(book);
+    setBookData({
+      name: book?.name || "",
+      publicationYear: book?.publicationYear || "",
+      stock: book?.stock || "",
+      authorId: book?.author ? book.author.id.toString() : "",
+      publisherId: book?.publisher ? book.publisher.id.toString() : "",
+      categoryIds: book?.categories ? book.categories.map((cat) => cat.id.toString()) : [],
+    });
+    setModalOpen(true);
   };
 
-  const handleDeleteBook = (bookId) => {
-    if (window.confirm("Bu kitabı silmek istediğinize emin misiniz?")) {
-      deleteBook(bookId)
-        .then(() => {
-          setBooks((prevBooks) =>
-            prevBooks.filter((book) => book.id !== bookId)
-          );
-        })
-        .catch((error) => {
-          console.error("Kitap silme hatası:", error);
-          alert("Kitap silme işlemi başarısız oldu.");
-        });
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setSelectedBook(null);
+    setBookData({
+      name: "",
+      publicationYear: "",
+      stock: "",
+      authorId: "",
+      publisherId: "",
+      categoryIds: [],
+    });
+  };
+
+  const handleChange = (e) => {
+    const { name, value, checked } = e.target;
+    if (name === "categoryIds") {
+      setBookData((prev) => ({
+        ...prev,
+        categoryIds: checked
+          ? [...prev.categoryIds, value]
+          : prev.categoryIds.filter((id) => id !== value),
+      }));
+    } else {
+      setBookData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
     }
+  };
+
+  const handleDateChange = (date) => {
+    if (date) {
+      setBookData((prev) => ({
+        ...prev,
+        publicationYear: date.getFullYear(),
+      }));
+    } else {
+      setBookData((prev) => ({
+        ...prev,
+        publicationYear: "",
+      }));
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+  
+    const bookPayload = {
+      name: bookData.name,
+      publicationYear: bookData.publicationYear,
+      stock: bookData.stock,
+      author: { id: bookData.authorId },
+      publisher: { id: bookData.publisherId },
+      categories: bookData.categoryIds.map((id) => ({ id })),
+    };
+  
+    const action = isEditing ? updateBook : addBook;
+    const actionPayload = isEditing ? [selectedBook.id, bookPayload] : [bookPayload];
+  
+    try {
+      await action(...actionPayload);
+      handleSuccessfulResponse(`Kitap ${isEditing ? "güncellendi" : "eklendi"}!`, "success");
+      handleCloseModal();
+      setBooks((prevBooks) => {
+        if (isEditing) {
+          return prevBooks.map((book) =>
+            book.id === selectedBook.id ? { ...book, ...bookPayload } : book
+          );
+        } else {
+          return [...prevBooks, bookPayload];
+        }
+      });
+    } catch (error) {
+      handleAxiosError(error);
+    }
+  };
+
+  const handleDeleteBook = (book) => {
+    setBookToDelete(book);
+    setDeleteConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await deleteBook(bookToDelete.id);
+      handleSuccessfulResponse("Kitap başarıyla silindi!", "success");
+      setBooks((prevBooks) =>
+        prevBooks.filter((book) => book.id !== bookToDelete.id)
+      );
+    } catch (error) {
+      handleAxiosError(error);
+    } finally {
+      setDeleteConfirmOpen(false);
+      setBookToDelete(null);
+    }
+  };
+
+  const handleSuccessfulResponse = (message, severity) => {
+    setNotification({ message, severity });
+    setSnackbarOpen(true);
+  };
+
+  const handleAxiosError = (error) => {
+    let errorMessage = "Bir hata oluştu.";
+    if (error.response) {
+      if (error.response.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response.data?.data) {
+        errorMessage = error.response.data.data[0] || "Bir hata oluştu.";
+      } else {
+        errorMessage = error.message;
+      }
+    } else {
+      errorMessage = error.message;
+    }
+    console.error("Hata detayları:", error);
+    handleSuccessfulResponse(errorMessage, "error");
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
   };
 
   return (
     <Container maxWidth="md" sx={{ pt: 5, pb: 5 }}>
-      <Button onClick={handleAddBook}>Ekle</Button>
+      <Button onClick={() => handleOpenModal()}>Kitap Ekle</Button>
       {books.map((book) => (
         <Card sx={{ maxWidth: 345, mb: 3 }} key={book.id}>
           <CardMedia
             sx={{ height: 140 }}
             image={book.image || "/img/yazar.jpg"}
-            title={book.title}
+            title={book.name}
           />
           <CardContent>
             <Typography gutterBottom variant="h5" component="div">
@@ -59,28 +232,128 @@ function Book() {
               {book.publicationYear}
             </Typography>
             <Typography variant="body2" sx={{ color: "text.secondary" }}>
-              {book.stock}
+              {book.author?.name}
+            </Typography>
+            <Typography variant="body2" sx={{ color: "text.secondary" }}>
+              {book.publisher?.name}
             </Typography>
           </CardContent>
           <CardActions>
-            <Button
-              size="small"
-              onClick={() => navigate(`/edit-book/${book.id}`)}
-            >
-              Edit
+            <Button size="small" onClick={() => handleOpenModal(book)}>
+              Düzenle
             </Button>
-            <Button
-              size="small"
-              onClick={() => navigate(`/book-details/${book.id}`)}
-            >
-              Detay
-            </Button>
-            <Button size="small" onClick={() => handleDeleteBook(book.id)}>
-              Delete
+            <Button size="small" color="error" onClick={() => handleDeleteBook(book)}>
+              Sil
             </Button>
           </CardActions>
         </Card>
       ))}
+      <Dialog open={modalOpen} onClose={handleCloseModal}>
+        <DialogTitle>{isEditing ? "Kitap Düzenle" : "Kitap Ekle"}</DialogTitle>
+        <DialogContent>
+          <form onSubmit={handleSubmit}>
+            <TextField
+              autoFocus
+              margin="dense"
+              name="name"
+              label="Kitap Adı"
+              type="text"
+              fullWidth
+              value={bookData.name}
+              onChange={handleChange}
+              required
+            />
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <DatePicker
+                views={['year']} // Yıl seçimini sağlamak için views özelliğini kullanıyoruz
+                label="Yayın Yılı"
+                value={bookData.publicationYear ? new Date(bookData.publicationYear, 0, 1) : null}
+                onChange={handleDateChange}
+                renderInput={(params) => <TextField {...params} fullWidth />}
+              />
+            </LocalizationProvider>
+            <TextField
+              margin="dense"
+              name="stock"
+              label="Stok"
+              type="number"
+              fullWidth
+              value={bookData.stock}
+              onChange={handleChange}
+              required
+            />
+            <FormControl fullWidth margin="dense">
+              <InputLabel>Yazar</InputLabel>
+              <Select
+                name="authorId"
+                value={bookData.authorId}
+                onChange={handleChange}
+                label="Yazar"
+              >
+                {authors.map((author) => (
+                  <MenuItem key={author.id} value={author.id}>
+                    {author.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl fullWidth margin="dense">
+              <InputLabel>Yayınevi</InputLabel>
+              <Select
+                name="publisherId"
+                value={bookData.publisherId}
+                onChange={handleChange}
+                label="Yayınevi"
+              >
+                {publishers.map((publisher) => (
+                  <MenuItem key={publisher.id} value={publisher.id}>
+                    {publisher.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormGroup>
+              {categories.map((category) => (
+                <FormControlLabel
+                  key={category.id}
+                  control={
+                    <Checkbox
+                      name="categoryIds"
+                      value={category.id}
+                      checked={bookData.categoryIds.includes(category.id.toString())}
+                      onChange={handleChange}
+                    />
+                  }
+                  label={category.name}
+                />
+              ))}
+            </FormGroup>
+            <DialogActions>
+              <Button onClick={handleCloseModal}>İptal</Button>
+              <Button type="submit" variant="contained">
+                {isEditing ? "Güncelle" : "Ekle"}
+              </Button>
+            </DialogActions>
+          </form>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={deleteConfirmOpen} onClose={() => setDeleteConfirmOpen(false)}>
+        <DialogTitle>Silme Onayı</DialogTitle>
+        <DialogContent>
+          <Typography>Bu kitabı silmek istediğinizden emin misiniz?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteConfirmOpen(false)}>İptal</Button>
+          <Button onClick={confirmDelete} color="error">
+            Sil
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
+        <Alert onClose={handleSnackbarClose} severity={notification.severity}>
+          {notification.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 }
