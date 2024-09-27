@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import {
   CardActions,
   Card,
@@ -21,8 +22,9 @@ import {
   FormControlLabel,
   Snackbar,
   Alert,
+  InputAdornment
 } from "@mui/material";
-
+import Grid from "@mui/material/Grid";
 import {
   getBooks,
   deleteBook,
@@ -35,6 +37,9 @@ import {
 import { DatePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import SearchIcon from "@mui/icons-material/Search";
 
 function Book() {
   const [books, setBooks] = useState([]);
@@ -61,6 +66,7 @@ function Book() {
   });
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [bookToDelete, setBookToDelete] = useState(null);
+  const navigate = useNavigate(); 
 
   useEffect(() => {
     const fetchData = async () => {
@@ -180,15 +186,12 @@ function Book() {
         "success"
       );
       handleCloseModal();
-      setBooks((prevBooks) => {
-        if (isEditing) {
-          return prevBooks.map((book) =>
-            book.id === selectedBook.id ? { ...book, ...bookPayload } : book
-          );
-        } else {
-          return [...prevBooks, bookPayload];
-        }
-      });
+
+      // Güncellenmiş verileri al ve state'i güncelle
+      const booksData = await getBooks(); // Güncellenmiş kitapları yeniden çekin
+      setBooks(booksData);
+      setFilteredBooks(booksData);
+
     } catch (error) {
       handleAxiosError(error);
     }
@@ -202,10 +205,12 @@ function Book() {
   const confirmDelete = async () => {
     try {
       await deleteBook(bookToDelete.id);
-      handleSuccessfulResponse("Kitap başarıyla silindi!", "success");
-      setBooks((prevBooks) =>
-        prevBooks.filter((book) => book.id !== bookToDelete.id)
-      );
+      handleSuccessfulResponse("Kitap başarıyla silindi", "success");
+
+      // Kitap listesini güncelle
+      const booksData = await getBooks();
+      setBooks(booksData);
+      setFilteredBooks(booksData);
     } catch (error) {
       handleAxiosError(error);
     } finally {
@@ -241,51 +246,84 @@ function Book() {
   };
 
   return (
-    <Container maxWidth="md" sx={{ pt: 5, pb: 5 }}>
-      <TextField
-        label="Ara"
-        variant="outlined"
-        fullWidth
-        margin="normal"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-      />
-      <Button onClick={() => handleOpenModal()}>Kitap Ekle</Button>
-      {filteredBooks.map((book) => (
-        <Card sx={{ maxWidth: 345, mb: 3 }} key={book.id}>
-          <CardMedia
-            sx={{ height: 140 }}
-            image={book.image || "/img/yazar.jpg"}
-            title={book.name}
-          />
-          <CardContent>
-            <Typography gutterBottom variant="h5" component="div">
-              {book.name}
-            </Typography>
-            <Typography variant="body2" sx={{ color: "text.secondary" }}>
-              {book.publicationYear}
-            </Typography>
-            <Typography variant="body2" sx={{ color: "text.secondary" }}>
-              {book.author?.name}
-            </Typography>
-            <Typography variant="body2" sx={{ color: "text.secondary" }}>
-              {book.publisher?.name}
-            </Typography>
-          </CardContent>
-          <CardActions>
-            <Button size="small" onClick={() => handleOpenModal(book)}>
-              Düzenle
-            </Button>
-            <Button
-              size="small"
-              color="error"
-              onClick={() => handleDeleteBook(book)}
-            >
-              Sil
-            </Button>
-          </CardActions>
-        </Card>
-      ))}
+    <Container maxWidth="lg" sx={{ pt: 5, pb: 5 }}>
+      <Typography variant="body2" pb={2} textAlign={"center"}>
+        Books encourage personal and social development by imparting knowledge
+        and ideas.
+      </Typography>
+      <div className="p-search">
+        <Button
+          variant="contained"
+          color="success"
+          onClick={() => handleOpenModal()}
+        >
+         Added
+        </Button>
+        <TextField
+          label="Ara..."
+          variant="outlined"
+          fullWidth
+          margin="normal"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          sx={{ width: "30%" }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+        />
+      </div>
+      <Grid container spacing={3} sx={{ marginTop: 0, borderTop: "none" }}>
+        {filteredBooks.map((book) => (
+          <Grid item xs={12} sm={6} md={4} lg={3} key={book.id}>
+            <Card sx={{ maxWidth: 345 }}>
+              <CardMedia
+                sx={{ height: 140, objectFit: "cover" }}
+                image={book.image || "/img/yazar.jpg"}
+                title={book.name}
+              />
+              <CardContent>
+                <Typography gutterBottom variant="h5" component="div">
+                  {book.name}
+                </Typography>
+                <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                  {book.publicationYear}
+                </Typography>
+                <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                  {book.author?.name}
+                </Typography>
+                <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                  {book.publisher?.name}
+                </Typography>
+              </CardContent>
+              <CardActions
+                sx={{ display: "flex", justifyContent: "space-between" }}
+              >
+                <Button
+                  color="primary"
+                  startIcon={<EditIcon />}
+                  onClick={() => handleOpenModal(book)}
+                >
+                </Button>
+               <Button
+                  color="info"
+                  onClick={() => navigate(`/book-details/${book.id}`)} // Detay sayfasına yönlendirme
+                >DETAİL</Button>
+                <Button
+                  color="error"
+                  startIcon={<DeleteIcon />}
+                  onClick={() => handleDeleteBook(book)}
+                >
+                </Button>
+              </CardActions>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+
       <Dialog open={modalOpen} onClose={handleCloseModal}>
         <DialogTitle>{isEditing ? "Kitap Düzenle" : "Kitap Ekle"}</DialogTitle>
         <DialogContent>

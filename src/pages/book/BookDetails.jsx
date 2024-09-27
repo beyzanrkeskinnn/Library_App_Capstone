@@ -29,13 +29,13 @@ function BookDetails() {
   }
 
   return (
-    <Container maxWidth="md" sx={{ pt: 5, pb: 5 }}>
+    <Container maxWidth="lg" sx={{ pt: 5, pb: 5 }}>
       <Button
         variant="outlined"
         color="secondary"
         onClick={() => window.history.back()}
       >
-        Geri
+        BACK
       </Button>
       <Card sx={{ maxWidth: 600, margin: "auto", mt: 3 }}>
         <CardMedia
@@ -67,12 +67,11 @@ function BookDetails() {
             Categories:
           </Typography>
           {book.categories.length > 0 ? (
-            <ul>
+            <ul style={{ listStyleType: "none", padding: 5 }}>
               {book.categories.map((category) => (
                 <li key={`${category.id}-${category.name}`}>
-                  {" "}
-                  {/* Benzersiz key kullanımı */}
-                  <Typography variant="body1">
+                 
+                  <Typography variant="body1" >
                     <strong>{category.name}</strong>: {category.description}
                   </Typography>
                 </li>

@@ -361,14 +361,12 @@ export default function Author() {
                           startIcon={<EditIcon />}
                           onClick={() => handleEdit(author)}
                         >
-                          Edit
                         </Button>
                         <Button
-                          color="secondary"
+                          color="error"
                           startIcon={<DeleteIcon />}
                           onClick={() => openConfirmDeleteDialog(author)}
                         >
-                          Delete
                         </Button>
                       </TableCell>
                     </StyledTableRow>

@@ -1,4 +1,4 @@
-import { 
+import {
   Typography,
   Container,
   Table,
@@ -27,25 +27,30 @@ import SearchIcon from "@mui/icons-material/Search";
 import { useEffect, useState } from "react";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { getPublishers, createPublisher, deletePublisher, updatePublisher } from "../../APIs/Publisher";
+import {
+  getPublishers,
+  createPublisher,
+  deletePublisher,
+  updatePublisher,
+} from "../../APIs/Publisher";
 import { parseISO } from "date-fns";
 
 // Stil kodları
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
-  '&.MuiTableCell-head': {
-    backgroundColor: '#d47a33',
+  "&.MuiTableCell-head": {
+    backgroundColor: "#d47a33",
     color: theme.palette.common.white,
   },
-  '&.MuiTableCell-body': {
+  "&.MuiTableCell-body": {
     fontSize: 14,
   },
 }));
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  '&:nth-of-type(odd)': {
+  "&:nth-of-type(odd)": {
     backgroundColor: theme.palette.action.hover,
   },
-  '&:last-child td, &:last-child th': {
+  "&:last-child td, &:last-child th": {
     border: 0,
   },
 }));
@@ -123,7 +128,9 @@ export default function Publisher() {
       setPublishers(data);
 
       setNotification({
-        message: `Publisher ${editingPublisher ? 'updated' : 'added'} successfully!`,
+        message: `Publisher ${
+          editingPublisher ? "updated" : "added"
+        } successfully!`,
         severity: "success",
       });
       setTimeout(() => {
@@ -212,7 +219,8 @@ export default function Publisher() {
       </Typography>
       <div className="p-search">
         <Typography variant="body2" pb={2} textAlign={"center"}>
-          Our publishers whose works shed light on the future.
+          Publishers support social education and cultural enrichment by
+          bringing information and culture to large audiences
         </Typography>
         <TextField
           variant="outlined"
@@ -294,32 +302,36 @@ export default function Publisher() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredPublishers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((publisher) => (
-                <StyledTableRow key={publisher.id}>
-                  <StyledTableCell>{publisher.name}</StyledTableCell>
-                  <StyledTableCell>{publisher.establishmentYear}</StyledTableCell>
-                  <StyledTableCell>{publisher.address}</StyledTableCell>
-                  <StyledTableCell>
-                    <Button
-                      variant="outlined"
-                      color="primary"
-                      onClick={() => handleEdit(publisher)}
-                      startIcon={<EditIcon />}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      onClick={() => handleDelete(publisher.id)}
-                      startIcon={<DeleteIcon />}
-                      sx={{ ml: 2 }}
-                    >
-                      Delete
-                    </Button>
-                  </StyledTableCell>
-                </StyledTableRow>
-              ))}
+              {filteredPublishers
+                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                .map((publisher) => (
+                  <StyledTableRow key={publisher.id}>
+                    <StyledTableCell>{publisher.name}</StyledTableCell>
+                    <StyledTableCell>
+                      {publisher.establishmentYear}
+                    </StyledTableCell>
+                    <StyledTableCell>{publisher.address}</StyledTableCell>
+                    <StyledTableCell>
+                      <Button
+                        
+                        color="primary"
+                        onClick={() => handleEdit(publisher)}
+                        startIcon={<EditIcon />}
+                      >
+                        
+                      </Button>
+                      <Button
+                  
+                        color="error"
+                        onClick={() => handleDelete(publisher.id)}
+                        startIcon={<DeleteIcon />}
+                        sx={{ ml: 2 }}
+                      >
+                       
+                      </Button>
+                    </StyledTableCell>
+                  </StyledTableRow>
+                ))}
             </TableBody>
           </Table>
           <TablePagination
@@ -347,10 +359,7 @@ export default function Publisher() {
       />
 
       {/* Error Dialog */}
-      <Dialog
-        open={errorDialogOpen}
-        onClose={() => setErrorDialogOpen(false)}
-      >
+      <Dialog open={errorDialogOpen} onClose={() => setErrorDialogOpen(false)}>
         <DialogTitle>Error</DialogTitle>
         <DialogContent>{errorMessage}</DialogContent>
         <DialogActions>
