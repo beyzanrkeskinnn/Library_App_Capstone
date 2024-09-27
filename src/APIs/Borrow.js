@@ -22,13 +22,14 @@ export const getBorrows = async () => {
     return data;
   };
   
-  export const updateBorrow = async (borrow) => {
+  export const updateBorrow = async (id, borrow) => {
     const { data } = await axios.put(
-      `${BASE_URL}/api/v1/borrows/${borrow.id}`,
+      `${BASE_URL}/api/v1/borrows/${id}`,
       borrow
     );
     return data;
   };
+  
 
   export const getBooks = async () => {
    
