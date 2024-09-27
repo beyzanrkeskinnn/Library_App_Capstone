@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   CardActions,
   Card,
@@ -22,14 +22,24 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import { getBooks, deleteBook, getAuthors, getPublishers, getCategories, addBook, updateBook } from "../../APIs/Book";
+
+import {
+  getBooks,
+  deleteBook,
+  getAuthors,
+  getPublishers,
+  getCategories,
+  addBook,
+  updateBook,
+} from "../../APIs/Book";
 import { DatePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 
 function Book() {
   const [books, setBooks] = useState([]);
+  const [filteredBooks, setFilteredBooks] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedBook, setSelectedBook] = useState(null);
@@ -49,18 +59,15 @@ function Book() {
     message: "",
     severity: "",
   });
-
-  // Onay modalı için durumlar
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [bookToDelete, setBookToDelete] = useState(null);
-
-  
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const booksData = await getBooks();
         setBooks(booksData);
+        setFilteredBooks(booksData);
 
         const [authorsData, publishersData, categoriesData] = await Promise.all(
           [getAuthors(), getPublishers(), getCategories()]
@@ -77,6 +84,18 @@ function Book() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    if (searchTerm) {
+      setFilteredBooks(
+        books.filter((book) =>
+          book.name.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+    } else {
+      setFilteredBooks(books);
+    }
+  }, [searchTerm, books]);
+
   const handleOpenModal = (book = null) => {
     setIsEditing(!!book);
     setSelectedBook(book);
@@ -86,7 +105,9 @@ function Book() {
       stock: book?.stock || "",
       authorId: book?.author ? book.author.id.toString() : "",
       publisherId: book?.publisher ? book.publisher.id.toString() : "",
-      categoryIds: book?.categories ? book.categories.map((cat) => cat.id.toString()) : [],
+      categoryIds: book?.categories
+        ? book.categories.map((cat) => cat.id.toString())
+        : [],
     });
     setModalOpen(true);
   };
@@ -137,7 +158,7 @@ function Book() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     const bookPayload = {
       name: bookData.name,
       publicationYear: bookData.publicationYear,
@@ -146,13 +167,18 @@ function Book() {
       publisher: { id: bookData.publisherId },
       categories: bookData.categoryIds.map((id) => ({ id })),
     };
-  
+
     const action = isEditing ? updateBook : addBook;
-    const actionPayload = isEditing ? [selectedBook.id, bookPayload] : [bookPayload];
-  
+    const actionPayload = isEditing
+      ? [selectedBook.id, bookPayload]
+      : [bookPayload];
+
     try {
       await action(...actionPayload);
-      handleSuccessfulResponse(`Kitap ${isEditing ? "güncellendi" : "eklendi"}!`, "success");
+      handleSuccessfulResponse(
+        `Kitap ${isEditing ? "güncellendi" : "eklendi"}!`,
+        "success"
+      );
       handleCloseModal();
       setBooks((prevBooks) => {
         if (isEditing) {
@@ -216,8 +242,16 @@ function Book() {
 
   return (
     <Container maxWidth="md" sx={{ pt: 5, pb: 5 }}>
+      <TextField
+        label="Ara"
+        variant="outlined"
+        fullWidth
+        margin="normal"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
       <Button onClick={() => handleOpenModal()}>Kitap Ekle</Button>
-      {books.map((book) => (
+      {filteredBooks.map((book) => (
         <Card sx={{ maxWidth: 345, mb: 3 }} key={book.id}>
           <CardMedia
             sx={{ height: 140 }}
@@ -242,7 +276,11 @@ function Book() {
             <Button size="small" onClick={() => handleOpenModal(book)}>
               Düzenle
             </Button>
-            <Button size="small" color="error" onClick={() => handleDeleteBook(book)}>
+            <Button
+              size="small"
+              color="error"
+              onClick={() => handleDeleteBook(book)}
+            >
               Sil
             </Button>
           </CardActions>
@@ -265,11 +303,16 @@ function Book() {
             />
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               <DatePicker
-                views={['year']} // Yıl seçimini sağlamak için views özelliğini kullanıyoruz
                 label="Yayın Yılı"
-                value={bookData.publicationYear ? new Date(bookData.publicationYear, 0, 1) : null}
+                value={
+                  bookData.publicationYear
+                    ? new Date(bookData.publicationYear, 0)
+                    : null
+                }
                 onChange={handleDateChange}
-                renderInput={(params) => <TextField {...params} fullWidth />}
+                renderInput={(params) => (
+                  <TextField {...params} margin="dense" fullWidth />
+                )}
               />
             </LocalizationProvider>
             <TextField
@@ -288,7 +331,7 @@ function Book() {
                 name="authorId"
                 value={bookData.authorId}
                 onChange={handleChange}
-                label="Yazar"
+                required
               >
                 {authors.map((author) => (
                   <MenuItem key={author.id} value={author.id}>
@@ -303,7 +346,7 @@ function Book() {
                 name="publisherId"
                 value={bookData.publisherId}
                 onChange={handleChange}
-                label="Yayınevi"
+                required
               >
                 {publishers.map((publisher) => (
                   <MenuItem key={publisher.id} value={publisher.id}>
@@ -318,10 +361,12 @@ function Book() {
                   key={category.id}
                   control={
                     <Checkbox
-                      name="categoryIds"
                       value={category.id}
-                      checked={bookData.categoryIds.includes(category.id.toString())}
+                      checked={bookData.categoryIds.includes(
+                        category.id.toString()
+                      )}
                       onChange={handleChange}
+                      name="categoryIds"
                     />
                   }
                   label={category.name}
@@ -330,27 +375,36 @@ function Book() {
             </FormGroup>
             <DialogActions>
               <Button onClick={handleCloseModal}>İptal</Button>
-              <Button type="submit" variant="contained">
-                {isEditing ? "Güncelle" : "Ekle"}
-              </Button>
+              <Button type="submit">Kaydet</Button>
             </DialogActions>
           </form>
         </DialogContent>
       </Dialog>
-      <Dialog open={deleteConfirmOpen} onClose={() => setDeleteConfirmOpen(false)}>
-        <DialogTitle>Silme Onayı</DialogTitle>
+      <Dialog
+        open={deleteConfirmOpen}
+        onClose={() => setDeleteConfirmOpen(false)}
+      >
+        <DialogTitle>Kitap Sil</DialogTitle>
         <DialogContent>
-          <Typography>Bu kitabı silmek istediğinizden emin misiniz?</Typography>
+          <Typography>
+            {bookToDelete?.name} kitabını silmek istediğinize emin misiniz?
+          </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDeleteConfirmOpen(false)}>İptal</Button>
-          <Button onClick={confirmDelete} color="error">
-            Sil
-          </Button>
+          <Button onClick={confirmDelete}>Sil</Button>
         </DialogActions>
       </Dialog>
-      <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
-        <Alert onClose={handleSnackbarClose} severity={notification.severity}>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={notification.severity}
+          sx={{ width: "100%" }}
+        >
           {notification.message}
         </Alert>
       </Snackbar>
