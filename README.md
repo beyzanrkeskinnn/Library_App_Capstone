@@ -19,7 +19,7 @@ This project is a frontend application developed for a Library Management System
 
 
 
-## Özellikler
+## Features
 
 - **Book Management:** Adding, updating, and deleting books.
 - **Author and Publisher Management:** Adding, updating, and deleting authors and publishers.
