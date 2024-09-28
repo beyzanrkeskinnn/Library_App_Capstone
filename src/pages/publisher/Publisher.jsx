@@ -112,16 +112,16 @@ export default function Publisher() {
           : null,
       };
   
+     
       if (editingPublisher) {
-       
         await updatePublisher({ id: editingPublisher, ...dataToSend });
-        setEditingPublisher(null);
+        setEditingPublisher(null); 
       } else {
        
         await createPublisher(dataToSend);
       }
   
-      
+     
       setNewPublisher({
         name: "",
         establishmentYear: null,
@@ -132,20 +132,20 @@ export default function Publisher() {
       const data = await getPublishers();
       setPublishers(data);
   
+     
       setNotification({
         message: `Publisher ${editingPublisher ? "updated" : "added"} successfully!`,
         severity: "success",
       });
   
-      
       setTimeout(() => {
         setNotification({ message: "", severity: "" });
       }, 3000);
-  
     } catch (error) {
       handleAxiosError(error);
     }
   };
+  
   
 
   const handleClear = () => {
