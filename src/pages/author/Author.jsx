@@ -99,6 +99,7 @@ export default function Author() {
   const [openErrorDialog, setOpenErrorDialog] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  // Fetches authors when the component mounts
   useEffect(() => {
     getAuthors().then((data) => {
       setAuthors(data);
@@ -115,6 +116,7 @@ export default function Author() {
     ]);
   }, []);
 
+  // Handles changes in the new author form fields
   const handleNewAuthor = (event) => {
     setNewAuthor({
       ...newAuthor,
@@ -122,11 +124,13 @@ export default function Author() {
     });
   };
 
+  // Handles search input changes and resets the page number
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
     setPage(0);
   };
 
+  // Filters authors based on the search term
   const filteredAuthors = authors.filter((author) => {
     return (
       author.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -134,6 +138,7 @@ export default function Author() {
     );
   });
 
+  // Handles the deletion of an author
   const handleDelete = async () => {
     try {
       if (authorToDelete) {
@@ -149,6 +154,7 @@ export default function Author() {
     }
   };
 
+  // Function to select the author to update and create
   const handleCreateOrUpdate = async () => {
     if (editMode && !selectedAuthorId) {
       console.error("Cannot update: No author selected");
@@ -169,7 +175,9 @@ export default function Author() {
       const data = await getAuthors();
       setAuthors(data);
       handleSuccessfulResponse(
-        editMode ? "Author updated successfully." : "Author added successfully.",
+        editMode
+          ? "Author updated successfully."
+          : "Author added successfully.",
         "success"
       );
     } catch (error) {
@@ -177,6 +185,7 @@ export default function Author() {
     }
   };
 
+  // Sets the author details for editing
   const handleEdit = (author) => {
     setEditMode(true);
     setSelectedAuthorId(author.id);
@@ -188,6 +197,7 @@ export default function Author() {
     setSelectedDate(parseISO(author.birthDate));
   };
 
+  // Handles error responses from Axios requests
   const handleAxiosError = (error) => {
     let errorMessage = "Bir hata oluştu.";
     if (error.response) {
@@ -206,6 +216,7 @@ export default function Author() {
     setOpenErrorDialog(true);
   };
 
+  // Displays success notifications
   const handleSuccessfulResponse = (message, severity) => {
     setNotification({ message: message, severity: severity });
     setTimeout(() => {
@@ -213,20 +224,24 @@ export default function Author() {
     }, 3000);
   };
 
+  // Handles page change for pagination
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
 
+  // Handles changes in rows per page for pagination
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
 
+  // Opens confirmation dialog to delete an author
   const openConfirmDeleteDialog = (author) => {
     setAuthorToDelete(author);
     setOpenDeleteDialog(true);
   };
 
+  // Clears the form inputs
   const handleClear = () => {
     setNewAuthor({ name: "", birthDate: null, country: "" });
     setSelectedDate(null);
@@ -332,10 +347,7 @@ export default function Author() {
               </Box>
             </FormControl>
           </Box>
-          <TableContainer
-            component={Paper}
-            sx={{ maxHeight: "400px", mt: 2 }}
-          >
+          <TableContainer component={Paper} sx={{ maxHeight: "400px", mt: 2 }}>
             <Table stickyHeader>
               <TableHead>
                 <TableRow>
@@ -360,14 +372,12 @@ export default function Author() {
                           color="primary"
                           startIcon={<EditIcon />}
                           onClick={() => handleEdit(author)}
-                        >
-                        </Button>
+                        ></Button>
                         <Button
                           color="error"
                           startIcon={<DeleteIcon />}
                           onClick={() => openConfirmDeleteDialog(author)}
-                        >
-                        </Button>
+                        ></Button>
                       </TableCell>
                     </StyledTableRow>
                   ))}
@@ -418,7 +428,10 @@ export default function Author() {
         onClose={() => setNotification({ message: "", severity: "" })}
         message={notification.message}
         action={
-          <Button color="inherit" onClick={() => setNotification({ message: "", severity: "" })}>
+          <Button
+            color="inherit"
+            onClick={() => setNotification({ message: "", severity: "" })}
+          >
             Close
           </Button>
         }

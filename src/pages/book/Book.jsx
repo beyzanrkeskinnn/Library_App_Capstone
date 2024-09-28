@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import {
   CardActions,
   Card,
@@ -22,7 +22,7 @@ import {
   FormControlLabel,
   Snackbar,
   Alert,
-  InputAdornment
+  InputAdornment,
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import {
@@ -66,8 +66,9 @@ function Book() {
   });
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [bookToDelete, setBookToDelete] = useState(null);
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
+  // Fetch books, authors, publishers, and categories from the API when the component mounts
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -90,6 +91,7 @@ function Book() {
     fetchData();
   }, []);
 
+  // Update filteredBooks when search term or books change
   useEffect(() => {
     if (searchTerm) {
       setFilteredBooks(
@@ -102,6 +104,7 @@ function Book() {
     }
   }, [searchTerm, books]);
 
+  // Open the modal for adding or editing a book
   const handleOpenModal = (book = null) => {
     setIsEditing(!!book);
     setSelectedBook(book);
@@ -118,6 +121,7 @@ function Book() {
     setModalOpen(true);
   };
 
+  // Close the modal and reset form data
   const handleCloseModal = () => {
     setModalOpen(false);
     setSelectedBook(null);
@@ -131,6 +135,7 @@ function Book() {
     });
   };
 
+  // Handle form field changes
   const handleChange = (e) => {
     const { name, value, checked } = e.target;
     if (name === "categoryIds") {
@@ -148,6 +153,7 @@ function Book() {
     }
   };
 
+  // Handle date change for the publication year
   const handleDateChange = (date) => {
     if (date) {
       setBookData((prev) => ({
@@ -162,6 +168,7 @@ function Book() {
     }
   };
 
+  // Submit form to either add or edit a book
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -186,28 +193,25 @@ function Book() {
         "success"
       );
       handleCloseModal();
-
-      // Güncellenmiş verileri al ve state'i güncelle
-      const booksData = await getBooks(); // Güncellenmiş kitapları yeniden çekin
+      const booksData = await getBooks();
       setBooks(booksData);
       setFilteredBooks(booksData);
-
     } catch (error) {
       handleAxiosError(error);
     }
   };
 
+  // Open delete confirmation dialog for the selected book
   const handleDeleteBook = (book) => {
     setBookToDelete(book);
     setDeleteConfirmOpen(true);
   };
 
+  // Confirm book deletion and fetch updated list of books
   const confirmDelete = async () => {
     try {
       await deleteBook(bookToDelete.id);
       handleSuccessfulResponse("Kitap başarıyla silindi", "success");
-
-      // Kitap listesini güncelle
       const booksData = await getBooks();
       setBooks(booksData);
       setFilteredBooks(booksData);
@@ -219,11 +223,13 @@ function Book() {
     }
   };
 
+  // Show success response in snackbar
   const handleSuccessfulResponse = (message, severity) => {
     setNotification({ message, severity });
     setSnackbarOpen(true);
   };
 
+  // Handle and display Axios errors
   const handleAxiosError = (error) => {
     let errorMessage = "Bir hata oluştu.";
     if (error.response) {
@@ -257,7 +263,7 @@ function Book() {
           color="success"
           onClick={() => handleOpenModal()}
         >
-         Added
+          Added
         </Button>
         <TextField
           label="Ara..."
@@ -306,18 +312,18 @@ function Book() {
                   color="primary"
                   startIcon={<EditIcon />}
                   onClick={() => handleOpenModal(book)}
-                >
-                </Button>
-               <Button
+                ></Button>
+                <Button
                   color="info"
                   onClick={() => navigate(`/book-details/${book.id}`)} // Detay sayfasına yönlendirme
-                >DETAİL</Button>
+                >
+                  DETAİL
+                </Button>
                 <Button
                   color="error"
                   startIcon={<DeleteIcon />}
                   onClick={() => handleDeleteBook(book)}
-                >
-                </Button>
+                ></Button>
               </CardActions>
             </Card>
           </Grid>
@@ -426,7 +432,7 @@ function Book() {
         <DialogTitle>Book Delete</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to delete the  {bookToDelete?.name} book?
+            Are you sure you want to delete the {bookToDelete?.name} book?
           </Typography>
         </DialogContent>
         <DialogActions>

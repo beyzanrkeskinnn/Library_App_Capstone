@@ -70,8 +70,7 @@ function BookDetails() {
             <ul style={{ listStyleType: "none", padding: 5 }}>
               {book.categories.map((category) => (
                 <li key={`${category.id}-${category.name}`}>
-                 
-                  <Typography variant="body1" >
+                  <Typography variant="body1">
                     <strong>{category.name}</strong>: {category.description}
                   </Typography>
                 </li>

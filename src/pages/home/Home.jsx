@@ -1,6 +1,12 @@
 import "./Home.css";
-import { styled , Container,  Typography, Button, Stack, Box} from "@mui/material/";
-
+import {
+  styled,
+  Container,
+  Typography,
+  Button,
+  Stack,
+  Box,
+} from "@mui/material/";
 
 function Home() {
   const Div = styled("div")(({ theme }) => ({
@@ -9,41 +15,41 @@ function Home() {
 
   return (
     <>
-    <Container maxWidth="lg" sx={{ pt: 5, pb: 5 }}>
-      <div className="home-section">
-        <div className="welcome">
-          <Box sx={{ width: "100%", maxWidth: 1000 }}>
-            <Div>
-              <Typography
-                variant="h3"
-                sx={{ fontWeight: "900", textAlign: "left" }}
-              >
-                Your library is at your fingertips
-              </Typography>
-            </Div>
+      <Container maxWidth="lg" sx={{ pt: 5, pb: 5 }}>
+        <div className="home-section">
+          <div className="welcome">
+            <Box sx={{ width: "100%", maxWidth: 1000 }}>
+              <Div>
+                <Typography
+                  variant="h3"
+                  sx={{ fontWeight: "900", textAlign: "left" }}
+                >
+                  Your library is at your fingertips
+                </Typography>
+              </Div>
 
-            <Typography
-              variant="body2"
-              sx={{ textAlign: "left", marginTop: "20px" }}
-            >
-              This library app offers the most practical way to discover and
-              manage information. We hope you have a pleasant and productive
-              development process!”
-            </Typography>
-            <Stack spacing={2} direction="row" sx={{ pt: "10px" }}>
-              <Button variant="contained" sx={{ backgroundColor: "#d47a33" }}>
-                Get Started
-              </Button>
+              <Typography
+                variant="body2"
+                sx={{ textAlign: "left", marginTop: "20px" }}
+              >
+                This library app offers the most practical way to discover and
+                manage information. We hope you have a pleasant and productive
+                development process!”
+              </Typography>
+              <Stack spacing={2} direction="row" sx={{ pt: "10px" }}>
+                <Button variant="contained" sx={{ backgroundColor: "#d47a33" }}>
+                  Get Started
+                </Button>
                 <Button variant="text" sx={{ color: "#d47a33" }}>
-                Learn More
-              </Button>
-            </Stack>
-          </Box>
+                  Learn More
+                </Button>
+              </Stack>
+            </Box>
+          </div>
+          <div className="img">
+            <img src="./img/home_book.png" alt="Home Book" />
+          </div>
         </div>
-        <div className="img">
-          <img src="./img/home_book.png" alt="Home Book" />
-        </div>
-      </div>
       </Container>
 
       <div className="home-services">
@@ -59,7 +65,6 @@ function Home() {
             justifyContent="center"
             gap={5}
           >
-            {/* First Stat */}
             <Box flex="1 1 100%" sm="1 1 45%" md="1 1 30%" textAlign="center">
               <Typography
                 variant="h3"
@@ -75,7 +80,7 @@ function Home() {
                 covered.
               </Typography>
             </Box>
-          
+
             {/* Second Stat */}
             <Box flex="1 1 100%" sm="1 1 45%" md="1 1 30%" textAlign="center">
               <Typography
@@ -109,24 +114,25 @@ function Home() {
               </Typography>
             </Box>
           </Box>
-        
-        </Container >
+        </Container>
         <Container
           maxWidth="lg"
           className="home-services-container2"
-          sx={{ pt: 5, pb: 5}}
+          sx={{ pt: 5, pb: 5 }}
         >
-        <Box >
-          <Typography variant="h5" color="white">OUR SERVICES</Typography>
-          <Box >
-            <Typography variant="body2" >Yazar Yönetim  </Typography>
-            <Typography variant="body2" >Category Yönetim  </Typography>
-            <Typography variant="body2" >Kitap Yönetim  </Typography>
-            <Typography variant="body2" >Yayımcı Yönetim  </Typography>
-            <Typography variant="body2" >Kitap alma Yönetim  </Typography>
+          <Box>
+            <Typography variant="h5" color="white">
+              OUR SERVICES
+            </Typography>
+            <Box>
+              <Typography variant="body2">Yazar Yönetim </Typography>
+              <Typography variant="body2">Category Yönetim </Typography>
+              <Typography variant="body2">Kitap Yönetim </Typography>
+              <Typography variant="body2">Yayımcı Yönetim </Typography>
+              <Typography variant="body2">Kitap alma Yönetim </Typography>
+            </Box>
           </Box>
-         </Box>
-         </Container>
+        </Container>
       </div>
     </>
   );

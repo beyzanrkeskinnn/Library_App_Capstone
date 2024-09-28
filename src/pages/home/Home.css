@@ -1,30 +1,30 @@
 .home-section {
   display: flex;
-  justify-content: space-between; /* İki element arasına boşluk bırak */
-  align-items: center; /* Dikeyde ortala */
-  gap: 80px; /* Elemanlar arasındaki boşluğu ayarla */
+  justify-content: space-between;
+  align-items: center;
+  gap: 80px;
   padding: 20px;
-  flex-wrap: wrap; /* Eğer ekran küçükse elemanları alta geçmesini sağlar */
+  flex-wrap: wrap;
   margin-bottom: 35px;
 }
 
 .welcome {
-  flex: 1; /* Esnek genişlik ver */
-  max-width: 50%; /* Genişlik sınırı */
+  flex: 1;
+  max-width: 50%;
 }
 
 .img {
-  flex: 1; /* Esnek genişlik ver */
-  max-width: 50%; /* Genişlik sınırı */
+  flex: 1;
+  max-width: 50%;
   display: flex;
-  justify-content: center; /* Görseli yatayda ortala */
-  align-items: center; /* Görseli dikeyde ortala */
+  justify-content: center;
+  align-items: center;
 }
 
 .img img {
-  max-width: 100%; /* Görüntü genişliği yüzde 100 */
-  height: auto; /* Yükseklik oranını koru */
-  object-fit: contain; /* Görüntüyü sınırları içinde tut */
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
 }
 
 .home-services {
@@ -35,35 +35,31 @@
   position: relative;
   z-index: 2;
   background: linear-gradient(
-    135deg, /* Çizgi açısı */
-    #fefcfb 25%, /* Çizgi renginin başlangıcı */
-    #d47a33 10%, /* Çizgi rengi bitişi */
-   
-    rgba(0, 0, 0, 0) 51% /* Arka plan rengi */
+    135deg,
+    #fefcfb 25%,
+    #d47a33 10%,
+
+    rgba(0, 0, 0, 0) 51%
   );
-  background-size: 100% 100%; /* Arka plan boyutu */
-  background-color: #d47a33; /* Arka plan rengi */
+  background-size: 100% 100%;
+  background-color: #d47a33;
 }
 
 .home-services-container {
   position: relative;
-  top: -90px; /* Home alanının üzerine çıkarmak için ayarlayın */
-  z-index: 3; /* Home-services-container en üstte olacak */
-  background: linear-gradient(
-    180deg, /* Dikey gradient */
-    #d47a33, /* Üst renk */
-    #d47a33 /* Alt renk */
-  );
-  padding-top: 60px; /* Üstten boşluk ekleyin */
-  width: 100%; /* Genişliği tam yapın */
-  text-align: center; /* İçerikleri ortala */
+  top: -90px;
+  z-index: 3;
+  background: linear-gradient(180deg, #d47a33, #d47a33);
+  padding-top: 60px;
+  width: 100%;
+  text-align: center;
 }
 
-.home-services-container2{
+.home-services-container2 {
   position: relative;
-  top: -90px; /* Home alanının üzerine çıkarmak için ayarlayın */
+  top: -90px;
   z-index: 3;
-  padding-top: 60px; /* Üstten boşluk ekleyin */
-  width: 100%; /* Genişliği tam yapın */
-  text-align: center; 
+  padding-top: 60px;
+  width: 100%;
+  text-align: center;
 }

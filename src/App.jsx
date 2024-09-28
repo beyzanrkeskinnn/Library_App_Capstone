@@ -1,7 +1,6 @@
 import "./App.css";
 import { useState, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
-
 import Navbar from "./components/Navbar";
 import Home from "./pages/home/Home";
 import Footer from "./components/Footer";
@@ -16,7 +15,6 @@ import { Typography } from "@mui/material";
 function App() {
   const [loading, setLoading] = useState(true);
   useEffect(() => {
-    
     const timer = setTimeout(() => setLoading(false), 2000);
     return () => clearTimeout(timer);
   }, []);
@@ -36,8 +34,8 @@ function App() {
             <Route path="publisher/*" element={<Publisher />} />
             <Route path="category/*" element={<Category />} />
             <Route path="borrowing/*" element={<Borrowing />} />
-           
-            <Route path="/book-details/:bookId" element={<BookDetails />} /> 
+
+            <Route path="/book-details/:bookId" element={<BookDetails />} />
           </Routes>
         </div>
       )}

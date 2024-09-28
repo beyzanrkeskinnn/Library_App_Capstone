@@ -1,16 +1,16 @@
-.book{
-    padding: 30px;
+.book {
+  padding: 30px;
 }
 
-.article{
-    display: flex;
-    flex-wrap: wrap;
-    gap: 50px;
+.article {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 50px;
 }
-.p-search{
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-    gap:40;
+.p-search {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 40;
 }

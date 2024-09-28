@@ -1,16 +1,15 @@
-.authorlist{
-    background: linear-gradient(135deg, #ffffff, #fae7d9);
-   
+.authorlist {
+  background: linear-gradient(135deg, #ffffff, #fae7d9);
 }
-.author-section{
-    display: flex;
-    justify-content: center;
-    align-items: start;
-    gap: 30px;
+.author-section {
+  display: flex;
+  justify-content: center;
+  align-items: start;
+  gap: 30px;
 }
-.p-search{
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
+.p-search {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
 }

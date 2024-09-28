@@ -34,7 +34,6 @@ import {
   updateCategory,
 } from "../../APIs/Category";
 
-// Stil kodları
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
     backgroundColor: "#d47a33",
@@ -44,6 +43,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
     fontSize: 14,
   },
 }));
+
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
   "&:nth-of-type(odd)": {
     backgroundColor: theme.palette.action.hover,
@@ -71,6 +71,7 @@ export default function Category() {
   const [deleteCategoryId, setDeleteCategoryId] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // Handle error from API requests and show relevant notification
   const handleAxiosError = (error) => {
     let errorMessage = "Bir hata oluştu.";
     if (error.response) {
@@ -88,6 +89,7 @@ export default function Category() {
     setNotification({ message: errorMessage, severity: "error" });
   };
 
+  // Handle input changes in the category form
   const handleChange = (e) => {
     const { name, value } = e.target;
     setNewCategory({
@@ -96,6 +98,7 @@ export default function Category() {
     });
   };
 
+  // Handle editing of a category
   const handleEdit = (category) => {
     if (category.id) {
       setEditingCategoryId(category.id);
@@ -108,6 +111,7 @@ export default function Category() {
     }
   };
 
+  // Handle form submission for creating or updating a category
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -146,6 +150,7 @@ export default function Category() {
     }
   };
 
+  // Handle the deletion of a category
   const handleDelete = useCallback(async () => {
     if (!deleteCategoryId) return;
 
@@ -180,6 +185,7 @@ export default function Category() {
     }
   }, [deleteCategoryId]);
 
+  // Filter categories based on search term
   const filteredCategories = categories.filter((category) => {
     const searchValue = searchTerm.toLowerCase();
     return (
@@ -188,6 +194,7 @@ export default function Category() {
     );
   });
 
+  // Fetch categories on component mount
   useEffect(() => {
     getCategories().then((data) => {
       setCategories(data);
@@ -351,7 +358,7 @@ export default function Category() {
             }}
           >
             <Typography variant="h6" component="h2">
-            Are you sure you want to delete the category?
+              Are you sure you want to delete the category?
             </Typography>
             <Box
               sx={{
@@ -359,24 +366,23 @@ export default function Category() {
                 justifyContent: "flex-end",
                 pt: 2,
               }}
-            ><Button
-            variant="contained"
-            color="primary"
-            onClick={handleDelete}
-            disabled={loading}
-          >
-            {loading ? "Is being deleted..." : "Delete"}
-          </Button>
+            >
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleDelete}
+                disabled={loading}
+              >
+                {loading ? "Is being deleted..." : "Delete"}
+              </Button>
               <Button
                 variant="outlined"
                 color="secondary"
                 onClick={() => setModalOpen(false)}
                 sx={{ ml: 2 }}
               >
-               Close
+                Close
               </Button>
-              
-              
             </Box>
           </Box>
         </Fade>

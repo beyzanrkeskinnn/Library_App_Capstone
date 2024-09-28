@@ -163,8 +163,8 @@ function Navbar() {
                   display: "block",
                   textTransform: "capitalize",
                 }}
-                component={Link} // Link bileşeni ile buton
-                to={`/${page.toLowerCase()}`} // Sayfa yönlendirmesi
+                component={Link} 
+                to={`/${page.toLowerCase()}`} 
               >
                 {page}
               </Button>

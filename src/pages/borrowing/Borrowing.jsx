@@ -32,7 +32,12 @@ import SearchIcon from "@mui/icons-material/Search";
 import { useEffect, useState } from "react";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { getBorrows, createBorrow, deleteBorrow, updateBorrow } from "../../APIs/Borrow";
+import {
+  getBorrows,
+  createBorrow,
+  deleteBorrow,
+  updateBorrow,
+} from "../../APIs/Borrow";
 import { getBooks } from "../../APIs/Book";
 import { parseISO, format } from "date-fns";
 
@@ -83,6 +88,7 @@ export default function Borrowing() {
   const [openErrorDialog, setOpenErrorDialog] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  // Fetch borrow and book data when component mounts
   useEffect(() => {
     async function fetchData() {
       try {
@@ -97,6 +103,7 @@ export default function Borrowing() {
     fetchData();
   }, []);
 
+  // Handle input change for form fields
   const handleChange = (e) => {
     const { name, value } = e.target;
     setNewBorrow((prevState) => ({
@@ -105,6 +112,7 @@ export default function Borrowing() {
     }));
   };
 
+  // Handle date change for DatePicker inputs
   const handleDateChange = (date, fieldName) => {
     setNewBorrow((prevState) => ({
       ...prevState,
@@ -112,24 +120,35 @@ export default function Borrowing() {
     }));
   };
 
+  // Handle form submission to create or update a borrow record
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const dataToSend = {
         borrowerName: newBorrow.borrowerName,
         borrowerMail: newBorrow.borrowerMail,
-        borrowingDate: newBorrow.borrowingDate ? format(newBorrow.borrowingDate, "yyyy-MM-dd") : null,
-        returnDate: newBorrow.returnDate ? format(newBorrow.returnDate, "yyyy-MM-dd") : null,
+        borrowingDate: newBorrow.borrowingDate
+          ? format(newBorrow.borrowingDate, "yyyy-MM-dd")
+          : null,
+        returnDate: newBorrow.returnDate
+          ? format(newBorrow.returnDate, "yyyy-MM-dd")
+          : null,
         bookForBorrowingRequest: {
           id: newBorrow.bookId,
         },
       };
       if (selectedBorrow) {
         await updateBorrow(selectedBorrow.id, dataToSend);
-        handleSuccessfulResponse("Borrow record updated successfully!", "success");
+        handleSuccessfulResponse(
+          "Borrow record updated successfully!",
+          "success"
+        );
       } else {
         await createBorrow(dataToSend);
-        handleSuccessfulResponse("Borrow record created successfully!", "success");
+        handleSuccessfulResponse(
+          "Borrow record created successfully!",
+          "success"
+        );
       }
       setNewBorrow({
         borrowerName: "",
@@ -146,6 +165,7 @@ export default function Borrowing() {
     }
   };
 
+  // Clear the form and reset the state
   const handleClear = () => {
     setNewBorrow({
       borrowerName: "",
@@ -157,6 +177,7 @@ export default function Borrowing() {
     setSelectedBorrow(null);
   };
 
+  // Handle errors from API calls and show error dialog
   const handleAxiosError = (error) => {
     let errorMessage = "An error occurred.";
     if (error.response) {
@@ -175,11 +196,13 @@ export default function Borrowing() {
     setOpenErrorDialog(true);
   };
 
+  // Handle successful responses and show notification
   const handleSuccessfulResponse = (message, severity) => {
     setNotification({ message, severity });
     setOpenSnackbar(true);
   };
 
+  // Handle delete action for a borrow record
   const handleDelete = async (id) => {
     try {
       await deleteBorrow(id);
@@ -190,6 +213,7 @@ export default function Borrowing() {
     }
   };
 
+  // Populate form fields with selected borrow data for editing
   const handleEdit = (borrow) => {
     setSelectedBorrow(borrow);
     setNewBorrow({
@@ -201,13 +225,21 @@ export default function Borrowing() {
     });
   };
 
+  // Filter borrows based on the search term
   const filteredBorrows = borrows.filter((borrow) => {
     const searchValue = searchTerm.toLowerCase();
     return (
       borrow.borrowerName.toLowerCase().includes(searchValue) ||
-      (borrow.borrowerMail && borrow.borrowerMail.toLowerCase().includes(searchValue)) ||
-      (borrow.borrowingDate && format(parseISO(borrow.borrowingDate), "dd MMM yyyy").toLowerCase().includes(searchValue)) ||
-      (borrow.returnDate && format(parseISO(borrow.returnDate), "dd MMM yyyy").toLowerCase().includes(searchValue))
+      (borrow.borrowerMail &&
+        borrow.borrowerMail.toLowerCase().includes(searchValue)) ||
+      (borrow.borrowingDate &&
+        format(parseISO(borrow.borrowingDate), "dd MMM yyyy")
+          .toLowerCase()
+          .includes(searchValue)) ||
+      (borrow.returnDate &&
+        format(parseISO(borrow.returnDate), "dd MMM yyyy")
+          .toLowerCase()
+          .includes(searchValue))
     );
   });
 
@@ -224,13 +256,13 @@ export default function Borrowing() {
       >
         Borrows
       </Typography>
-    
+
       <Box
         component="form"
         sx={{
           "& > :not(style)": { m: 1, width: "30ch" },
           display: "flex",
-          justifyContent:"center"
+          justifyContent: "center",
         }}
         noValidate
         autoComplete="off"
@@ -285,31 +317,35 @@ export default function Borrowing() {
             ))}
           </Select>
         </FormControl>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+        <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
           <Button type="submit" variant="contained" color="primary">
             {selectedBorrow ? "Update" : "Add"}
           </Button>
-          <Button type="button" variant="outlined" color="secondary" onClick={handleClear}>
+          <Button
+            type="button"
+            variant="outlined"
+            color="secondary"
+            onClick={handleClear}
+          >
             Clear
           </Button>
         </Box>
       </Box>
       <Box mb={2} textAlign="right" pt={3}>
-       
-       <TextField
-         variant="outlined"
-         placeholder="Search..."
-         InputProps={{
-           startAdornment: (
-             <InputAdornment position="start">
-               <SearchIcon />
-             </InputAdornment>
-           ),
-         }}
-         value={searchTerm}
-         onChange={(e) => setSearchTerm(e.target.value)}
-       />
-     </Box>
+        <TextField
+          variant="outlined"
+          placeholder="Search..."
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </Box>
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
           <TableHead>
@@ -322,50 +358,54 @@ export default function Borrowing() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredBorrows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((borrow) => {
-              const statusColor = getStatusColor(borrow.returnDate);
-              const statusText = borrow.returnDate ? "Returned" : "Not Returned";
+            {filteredBorrows
+              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+              .map((borrow) => {
+                const statusColor = getStatusColor(borrow.returnDate);
+                const statusText = borrow.returnDate
+                  ? "Returned"
+                  : "Not Returned";
 
-              return (
-                <StyledTableRow key={borrow.id}>
-                  <StyledTableCell>{borrow.borrowerName}</StyledTableCell>
-                  <StyledTableCell>
-                    {borrow.borrowingDate && format(parseISO(borrow.borrowingDate), "dd MMM yyyy")}
-                  </StyledTableCell>
-                  <StyledTableCell sx={{ color: statusColor }}>
-                    {borrow.returnDate ? format(parseISO(borrow.returnDate), "dd MMM yyyy") : "Not returned"}
-                  </StyledTableCell>
-                  <StyledTableCell>{borrow.book?.name || "Unknown"}</StyledTableCell>
-                  <StyledTableCell>
-                    <Button
-                      onClick={() => handleEdit(borrow)}
-                      startIcon={<EditIcon />}
-                      color="primary"
-                    
-                    >
-                    </Button>
-                    <Button
-                      onClick={() => handleDelete(borrow.id)}
-                      startIcon={<DeleteIcon />}
-                      color="error"
-                      
-                      sx={{ ml: 1 }}
-                    >
-                    </Button>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                       
-                        color: statusColor,
-                        fontWeight: 'bold',
-                      }}
-                    >
-                      {statusText}
-                    </Typography>
-                  </StyledTableCell>
-                </StyledTableRow>
-              );
-            })}
+                return (
+                  <StyledTableRow key={borrow.id}>
+                    <StyledTableCell>{borrow.borrowerName}</StyledTableCell>
+                    <StyledTableCell>
+                      {borrow.borrowingDate &&
+                        format(parseISO(borrow.borrowingDate), "dd MMM yyyy")}
+                    </StyledTableCell>
+                    <StyledTableCell sx={{ color: statusColor }}>
+                      {borrow.returnDate
+                        ? format(parseISO(borrow.returnDate), "dd MMM yyyy")
+                        : "Not returned"}
+                    </StyledTableCell>
+                    <StyledTableCell>
+                      {borrow.book?.name || "Unknown"}
+                    </StyledTableCell>
+                    <StyledTableCell>
+                      <Button
+                        onClick={() => handleEdit(borrow)}
+                        startIcon={<EditIcon />}
+                        color="primary"
+                      ></Button>
+                      <Button
+                        onClick={() => handleDelete(borrow.id)}
+                        startIcon={<DeleteIcon />}
+                        color="error"
+                        sx={{ ml: 1 }}
+                      ></Button>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: statusColor,
+                          fontWeight: "bold",
+                        }}
+                      >
+                        {statusText}
+                      </Typography>
+                    </StyledTableCell>
+                  </StyledTableRow>
+                );
+              })}
           </TableBody>
         </Table>
         <TablePagination
@@ -375,7 +415,9 @@ export default function Borrowing() {
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={(event, newPage) => setPage(newPage)}
-          onRowsPerPageChange={(event) => setRowsPerPage(parseInt(event.target.value, 10))}
+          onRowsPerPageChange={(event) =>
+            setRowsPerPage(parseInt(event.target.value, 10))
+          }
         />
       </TableContainer>
       <Snackbar
@@ -383,14 +425,15 @@ export default function Borrowing() {
         autoHideDuration={6000}
         onClose={() => setOpenSnackbar(false)}
       >
-        <Alert onClose={() => setOpenSnackbar(false)} severity={notification.severity} sx={{ width: '100%' }}>
+        <Alert
+          onClose={() => setOpenSnackbar(false)}
+          severity={notification.severity}
+          sx={{ width: "100%" }}
+        >
           {notification.message}
         </Alert>
       </Snackbar>
-      <Dialog
-        open={openErrorDialog}
-        onClose={() => setOpenErrorDialog(false)}
-      >
+      <Dialog open={openErrorDialog} onClose={() => setOpenErrorDialog(false)}>
         <DialogTitle>Error</DialogTitle>
         <DialogContent>
           <Typography>{errorMessage}</Typography>

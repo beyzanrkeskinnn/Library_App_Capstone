@@ -35,7 +35,6 @@ import {
 } from "../../APIs/Publisher";
 import { parseISO } from "date-fns";
 
-// Stil kodları
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   "&.MuiTableCell-head": {
     backgroundColor: "#d47a33",
@@ -73,6 +72,7 @@ export default function Publisher() {
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  // Handle input change for text fields
   const handleChange = (e) => {
     const { name, value } = e.target;
     setNewPublisher({
@@ -81,6 +81,7 @@ export default function Publisher() {
     });
   };
 
+  // Handle date change for establishment year
   const handleDateChange = (newValue) => {
     setNewPublisher({
       ...newPublisher,
@@ -88,6 +89,7 @@ export default function Publisher() {
     });
   };
 
+  // Handle edit action, populates form with selected publisher details
   const handleEdit = (publisher) => {
     if (publisher.id) {
       setEditingPublisher(publisher.id);
@@ -101,9 +103,10 @@ export default function Publisher() {
     }
   };
 
+  // Handle form submission, adds or updates publisher
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     try {
       const dataToSend = {
         ...newPublisher,
@@ -111,33 +114,30 @@ export default function Publisher() {
           ? newPublisher.establishmentYear.getFullYear()
           : null,
       };
-  
-     
+
       if (editingPublisher) {
         await updatePublisher({ id: editingPublisher, ...dataToSend });
-        setEditingPublisher(null); 
+        setEditingPublisher(null);
       } else {
-       
         await createPublisher(dataToSend);
       }
-  
-     
+
       setNewPublisher({
         name: "",
         establishmentYear: null,
         address: "",
       });
-  
-      
+
       const data = await getPublishers();
       setPublishers(data);
-  
-     
+
       setNotification({
-        message: `Publisher ${editingPublisher ? "updated" : "added"} successfully!`,
+        message: `Publisher ${
+          editingPublisher ? "updated" : "added"
+        } successfully!`,
         severity: "success",
       });
-  
+
       setTimeout(() => {
         setNotification({ message: "", severity: "" });
       }, 3000);
@@ -145,9 +145,8 @@ export default function Publisher() {
       handleAxiosError(error);
     }
   };
-  
-  
 
+  // Clear the form inputs
   const handleClear = () => {
     setNewPublisher({
       name: "",
@@ -157,6 +156,7 @@ export default function Publisher() {
     setEditingPublisher(null);
   };
 
+  // Handle API errors
   const handleAxiosError = (error) => {
     let errorMessage = "Bir hata oluştu.";
     if (error.response) {
@@ -175,6 +175,7 @@ export default function Publisher() {
     setErrorDialogOpen(true);
   };
 
+  // Handle delete action for publisher
   const handleDelete = async (publisherId) => {
     if (window.confirm("Are you sure you want to delete this publisher?")) {
       try {
@@ -196,6 +197,7 @@ export default function Publisher() {
     }
   };
 
+  // Filter publishers based on search term
   const filteredPublishers = publishers.filter((publisher) => {
     const searchValue = searchTerm.toLowerCase();
     return (
@@ -205,6 +207,7 @@ export default function Publisher() {
     );
   });
 
+  // Fetch the list of publishers when component mounts
   useEffect(() => {
     getPublishers().then((data) => {
       setPublishers(data);
@@ -320,22 +323,16 @@ export default function Publisher() {
                     <StyledTableCell>{publisher.address}</StyledTableCell>
                     <StyledTableCell>
                       <Button
-                        
                         color="primary"
                         onClick={() => handleEdit(publisher)}
                         startIcon={<EditIcon />}
-                      >
-                        
-                      </Button>
+                      ></Button>
                       <Button
-                  
                         color="error"
                         onClick={() => handleDelete(publisher.id)}
                         startIcon={<DeleteIcon />}
                         sx={{ ml: 2 }}
-                      >
-                       
-                      </Button>
+                      ></Button>
                     </StyledTableCell>
                   </StyledTableRow>
                 ))}
