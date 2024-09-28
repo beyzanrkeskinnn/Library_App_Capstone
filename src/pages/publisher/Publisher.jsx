@@ -103,6 +103,7 @@ export default function Publisher() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
     try {
       const dataToSend = {
         ...newPublisher,
@@ -110,36 +111,42 @@ export default function Publisher() {
           ? newPublisher.establishmentYear.getFullYear()
           : null,
       };
-
+  
       if (editingPublisher) {
+       
         await updatePublisher({ id: editingPublisher, ...dataToSend });
         setEditingPublisher(null);
       } else {
+       
         await createPublisher(dataToSend);
       }
-
+  
+      
       setNewPublisher({
         name: "",
         establishmentYear: null,
         address: "",
       });
-
+  
+      
       const data = await getPublishers();
       setPublishers(data);
-
+  
       setNotification({
-        message: `Publisher ${
-          editingPublisher ? "updated" : "added"
-        } successfully!`,
+        message: `Publisher ${editingPublisher ? "updated" : "added"} successfully!`,
         severity: "success",
       });
+  
+      
       setTimeout(() => {
         setNotification({ message: "", severity: "" });
       }, 3000);
+  
     } catch (error) {
       handleAxiosError(error);
     }
   };
+  
 
   const handleClear = () => {
     setNewPublisher({
